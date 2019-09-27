@@ -14,10 +14,7 @@
 
 //! IPinfo error type and kinds.
 
-use std::{
-    fmt,
-    error::Error,
-};
+use std::{error::Error, fmt};
 
 /// Create a new error (of a given kind) with a formatted message
 ///
@@ -142,8 +139,14 @@ mod tests {
 
     #[test]
     fn iperrorkind_string_values() {
-        assert_eq!(IpErrorKind::HTTPClientError.to_string(), "HTTP client library error");
-        assert_eq!(IpErrorKind::RateLimitExceededError.to_string(), "rate limit exceeded");
+        assert_eq!(
+            IpErrorKind::HTTPClientError.to_string(),
+            "HTTP client library error"
+        );
+        assert_eq!(
+            IpErrorKind::RateLimitExceededError.to_string(),
+            "rate limit exceeded"
+        );
     }
 
     #[test]

@@ -12,8 +12,6 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-extern crate lru;
-
 /// Get crate version from cargo at build time.
 const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
@@ -22,6 +20,6 @@ mod error;
 mod api;
 mod ipinfo;
 
-pub use error::*;
-pub use api::*;
 pub use crate::ipinfo::*;
+pub use api::*;
+pub use error::*;

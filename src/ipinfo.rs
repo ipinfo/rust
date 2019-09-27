@@ -12,24 +12,14 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-use std::time::Duration;
+use std::{collections::HashMap, time::Duration};
 
-use crate::{
-    VERSION,
-    IpError,
-    IpDetails,
-};
+use crate::{IpDetails, IpError, VERSION};
 
-use serde_json::json;
 use lru::LruCache;
+use serde_json::json;
 
-use reqwest::header::{
-    HeaderMap,
-    HeaderValue,
-    USER_AGENT,
-    CONTENT_TYPE,
-    ACCEPT,
-};
+use reqwest::header::{HeaderMap, HeaderValue, ACCEPT, AUTHORIZATION, CONTENT_TYPE, USER_AGENT};
 
 /// IpInfo structure configuration.
 pub struct IpInfoConfig {
@@ -55,6 +45,7 @@ impl Default for IpInfoConfig {
 
 /// IPinfo requests context structure.
 pub struct IpInfo {
+    url: String,
     token: Option<String>,
     client: reqwest::Client,
     cache: LruCache<String, IpDetails>,
@@ -68,22 +59,35 @@ impl IpInfo {
     /// ```
     /// use ipinfo::IpInfo;
     ///
-    /// let ipinfo = IpInfo::new(Default::default());
+    /// let ipinfo = IpInfo::new(Default::default()).expect("should construct");
     /// ```
     pub fn new(config: IpInfoConfig) -> Result<Self, IpError> {
-        let client = reqwest::Client::builder()
-            .timeout(config.timeout)
-            .build()?;
+        let client = reqwest::Client::builder().timeout(config.timeout).build()?;
+
+        #[cfg(test)]
+        let url = mockito::server_url();
+        #[cfg(not(test))]
+        let url = "https://ipinfo.io".to_owned();
 
         Ok(Self {
+            url: url,
             token: config.token,
             client: client,
             cache: LruCache::new(config.cache_size),
         })
     }
 
-    /// Lookup a list of IP addresses.
-    pub fn lookup(&mut self, ips: &[&str]) -> Result<Vec<IpDetails>, IpError> {
+    /// Lookup a list of one or more IP addresses.
+    ///
+    /// # Examples
+    ///
+    /// ```norun
+    /// use ipinfo::IpInfo;
+    ///
+    /// let mut ipinfo = IpInfo::new(Default::default()).expect("should construct");
+    /// let res = ipinfo.lookup(&["8.8.8.8"]).expect("should run");
+    /// ```
+    pub fn lookup(&mut self, ips: &[&str]) -> Result<HashMap<String, IpDetails>, IpError> {
         let mut hits: Vec<IpDetails> = vec![];
         let mut misses: Vec<&str> = vec![];
 
@@ -97,26 +101,36 @@ impl IpInfo {
         });
 
         // Lookup cache misses
-        let response = self.client.post(
-            &format!("https://ipinfo.io/batch?token={}", self.token.as_ref().unwrap_or(&"".to_owned())))
-            .headers(Self::construct_headers())
+        let response = self
+            .client
+            .post(&format!("{}/batch", self.url))
+            .headers(self.construct_headers())
             .json(&json!(misses))
             .send()?;
 
         match response.status() {
             reqwest::StatusCode::TOO_MANY_REQUESTS => Err(err!(RateLimitExceededError)),
             _ => {
-                let resp: Vec<IpDetails> = response.error_for_status()?.json()?;
-                resp.iter().for_each(|x| { self.cache.put(x.ip.clone(), x.clone()); });
+                let resp: HashMap<String, IpDetails> = response.error_for_status()?.json()?;
+                resp.iter().for_each(|x| {
+                    self.cache.put(x.0.clone(), x.1.clone());
+                });
                 Ok(resp)
-            },
+            }
         }
     }
 
     /// Construct API request headers.
-    fn construct_headers() -> HeaderMap {
+    fn construct_headers(&self) -> HeaderMap {
         let mut headers = HeaderMap::new();
-        headers.insert(USER_AGENT, HeaderValue::from_str(&format!("IPinfoClient/Rust/{}", VERSION)).unwrap());
+        headers.insert(
+            USER_AGENT,
+            HeaderValue::from_str(&format!("IPinfoClient/Rust/{}", VERSION)).unwrap(),
+        );
+        headers.insert(
+            AUTHORIZATION,
+            HeaderValue::from_str(&self.token.as_ref().unwrap_or(&"".to_string())).unwrap(),
+        );
         headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
         headers.insert(ACCEPT, HeaderValue::from_static("application/json"));
         headers
@@ -137,9 +151,13 @@ mod tests {
 
     #[test]
     fn request_headers_are_canonical() {
-        let headers = IpInfo::construct_headers();
+        let ipinfo = IpInfo::new(Default::default()).expect("should construct");
+        let headers = ipinfo.construct_headers();
 
-        assert_eq!(headers[USER_AGENT], format!("IPinfoClient/Rust/{}", VERSION));
+        assert_eq!(
+            headers[USER_AGENT],
+            format!("IPinfoClient/Rust/{}", VERSION)
+        );
         assert_eq!(headers[CONTENT_TYPE], "application/json");
         assert_eq!(headers[ACCEPT], "application/json");
     }
