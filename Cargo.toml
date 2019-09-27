@@ -18,6 +18,8 @@ codecov = { repository = "amrali/ipinfo-rs", branch = "master", service = "githu
 [dependencies]
 reqwest = "0.9"
 lru = "0.1"
+serde = "1.0"
+serde_json = "1.0"
 
 [dev-dependencies]
 mockito = "0.21"
