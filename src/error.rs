@@ -46,6 +46,9 @@ macro_rules! err {
 pub enum IpErrorKind {
     /// HTTP client library error.
     HTTPClientError,
+
+    /// Rate limit exceeded error.
+    RateLimitExceededError,
 }
 
 impl IpErrorKind {
@@ -53,6 +56,7 @@ impl IpErrorKind {
     pub fn as_str(&self) -> &str {
         match self {
             IpErrorKind::HTTPClientError => "HTTP client library error",
+            IpErrorKind::RateLimitExceededError => "rate limit exceeded",
         }
     }
 }
@@ -139,6 +143,7 @@ mod tests {
     #[test]
     fn iperrorkind_string_values() {
         assert_eq!(IpErrorKind::HTTPClientError.to_string(), "HTTP client library error");
+        assert_eq!(IpErrorKind::RateLimitExceededError.to_string(), "rate limit exceeded");
     }
 
     #[test]
