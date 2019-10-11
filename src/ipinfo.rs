@@ -263,4 +263,62 @@ mod tests {
         assert_eq!(ip4.postal, None);
         assert_eq!(ip4.timezone, None);
     }
+
+    #[test]
+    fn request_cache_miss_and_hit() {
+        let _m = mock("POST", "/batch")
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body(
+                r#"{
+                  "8.8.8.8": {
+                    "ip": "8.8.8.8",
+                    "hostname": "dns.google",
+                    "city": "Mountain View",
+                    "region": "California",
+                    "country": "US",
+                    "loc": "37.3860,-122.0838",
+                    "org": "AS15169 Google LLC",
+                    "postal": "94035",
+                    "timezone": "America/Los_Angeles"
+                  }
+              }"#,
+            )
+            .create();
+
+        let mut ipinfo = IpInfo::new(Default::default()).expect("should construct");
+
+        // Populate the cache with 8.8.8.8
+        let details = ipinfo.lookup(&["8.8.8.8"]).expect("should lookup");
+
+        // Assert 1 result
+        assert!(details.contains_key("8.8.8.8"));
+        assert_eq!(details.len(), 1);
+
+        // Should have a cache hit for 8.8.8.8 and query for 4.2.2.4
+        let _m = mock("POST", "/batch")
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body(
+                r#"{
+                  "4.2.2.4": {
+                    "ip": "4.2.2.4",
+                    "hostname": "d.resolvers.level3.net",
+                    "city": "",
+                    "region": "",
+                    "country": "US",
+                    "loc": "37.7510,-97.8220",
+                    "org": "AS3356 Level 3 Parent, LLC"
+                  }
+              }"#,
+            )
+            .create();
+
+        let details = ipinfo.lookup(&["4.2.2.4", "8.8.8.8"]).expect("should lookup");
+
+        // Assert 2 results
+        assert!(details.contains_key("8.8.8.8"));
+        assert!(details.contains_key("4.2.2.4"));
+        assert_eq!(details.len(), 2);
+    }
 }
