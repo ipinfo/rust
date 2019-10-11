@@ -19,7 +19,7 @@ use crate::{IpDetails, IpError, VERSION};
 use lru::LruCache;
 use serde_json::json;
 
-use reqwest::header::{HeaderMap, HeaderValue, ACCEPT, AUTHORIZATION, CONTENT_TYPE, USER_AGENT};
+use reqwest::header::{HeaderMap, HeaderValue, ACCEPT, CONTENT_TYPE, USER_AGENT};
 
 /// IpInfo structure configuration.
 pub struct IpInfoConfig {
@@ -104,7 +104,8 @@ impl IpInfo {
         let response = self
             .client
             .post(&format!("{}/batch", self.url))
-            .headers(self.construct_headers())
+            .headers(Self::construct_headers())
+            .bearer_auth(&self.token.as_ref().unwrap_or(&"".to_string()))
             .json(&json!(misses))
             .send()?;
 
@@ -121,15 +122,11 @@ impl IpInfo {
     }
 
     /// Construct API request headers.
-    fn construct_headers(&self) -> HeaderMap {
+    fn construct_headers() -> HeaderMap {
         let mut headers = HeaderMap::new();
         headers.insert(
             USER_AGENT,
             HeaderValue::from_str(&format!("IPinfoClient/Rust/{}", VERSION)).unwrap(),
-        );
-        headers.insert(
-            AUTHORIZATION,
-            HeaderValue::from_str(&self.token.as_ref().unwrap_or(&"".to_string())).unwrap(),
         );
         headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
         headers.insert(ACCEPT, HeaderValue::from_static("application/json"));
@@ -151,8 +148,7 @@ mod tests {
 
     #[test]
     fn request_headers_are_canonical() {
-        let ipinfo = IpInfo::new(Default::default()).expect("should construct");
-        let headers = ipinfo.construct_headers();
+        let headers = IpInfo::construct_headers();
 
         assert_eq!(
             headers[USER_AGENT],
