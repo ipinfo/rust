@@ -26,10 +26,10 @@ pub struct IpInfoConfig {
     /// IPinfo access token.
     pub token: Option<String>,
 
-    /// The timeout of HTTP requests.
+    /// The timeout of HTTP requests. (default: 3 seconds)
     pub timeout: Duration,
 
-    /// The size of the LRU cache.
+    /// The size of the LRU cache. (default: 100 IPs)
     pub cache_size: usize,
 }
 
