@@ -46,6 +46,12 @@ pub enum IpErrorKind {
 
     /// Rate limit exceeded error.
     RateLimitExceededError,
+
+    /// IpInfo Request error.
+    IpRequestError,
+
+    /// Parse error.
+    ParseError,
 }
 
 impl IpErrorKind {
@@ -54,6 +60,8 @@ impl IpErrorKind {
         match self {
             IpErrorKind::HTTPClientError => "HTTP client library error",
             IpErrorKind::RateLimitExceededError => "rate limit exceeded",
+            IpErrorKind::IpRequestError => "application error",
+            IpErrorKind::ParseError => "parse error",
         }
     }
 }
@@ -129,7 +137,16 @@ impl From<IpErrorKind> for IpError {
 
 impl From<reqwest::Error> for IpError {
     fn from(err: reqwest::Error) -> Self {
-        err!(HTTPClientError, &err.to_string())
+        match err.status() {
+            Some(status) => err!(HTTPClientError, &format!("{}: {}", status, &err.to_string())),
+            None => err!(HTTPClientError, &err.to_string()),
+        }
+    }
+}
+
+impl From<serde_json::Error> for IpError {
+    fn from(err: serde_json::Error) -> Self {
+        err!(ParseError, &err.to_string())
     }
 }
 
@@ -146,6 +163,14 @@ mod tests {
         assert_eq!(
             IpErrorKind::RateLimitExceededError.to_string(),
             "rate limit exceeded"
+        );
+        assert_eq!(
+            IpErrorKind::IpRequestError.to_string(),
+            "application error"
+        );
+        assert_eq!(
+            IpErrorKind::ParseError.to_string(),
+            "parse error"
         );
     }
 
