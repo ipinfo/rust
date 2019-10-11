@@ -19,48 +19,92 @@ use std::collections::HashMap;
 use serde::Deserialize;
 use serde_json::Value;
 
+/// IP address lookup details.
 #[derive(Debug, Deserialize, Clone)]
 pub struct IpDetails {
+    /// The IP address.
     pub ip: String,
+
+    /// The reverse DNS lookup hostname of the IP address.
     pub hostname: String,
+
+    /// The city for the IP address.
     pub city: String,
+
+    /// The region for the IP address.
     pub region: String,
+
+    /// The country for the IP address.
     pub country: String,
+
+    /// The geographical location for the IP address.
     pub loc: String,
+
+    /// The postal code for the IP address.
     pub postal: Option<String>,
+
+    /// The timezone for the IP address.
     pub timezone: Option<String>,
+
+    /// The organization for the IP address.
     pub org: Option<String>,
+
+    /// The AS details the IP address is part of.
     pub asn: Option<AsnDetails>,
+
+    /// The company details that owns this IP address.
     pub company: Option<CompanyDetails>,
+
+    /// The carrier details that owns this mobile IP address.
     pub carrier: Option<CarrierDetails>,
 
     #[serde(flatten)]
     pub extra: HashMap<String, Value>,
 }
 
+/// ASN details.
 #[derive(Debug, Deserialize, Clone)]
 pub struct AsnDetails {
+    /// The AS number.
     pub asn: String,
+
+    /// The name of the entity that owns this AS.
     pub name: String,
+
+    /// The domain for the entity that owns this AS.
     pub domain: String,
+
+    /// The route for this AS.
     pub route: String,
 
+    /// The entity type that owns this AS. (i.e., business, education, hosting, isp)
     #[serde(rename = "type")]
     pub asn_type: String,
 }
 
+/// Company details.
 #[derive(Debug, Deserialize, Clone)]
 pub struct CompanyDetails {
+    /// The name of the entity that owns the IP address.
     pub name: String,
+
+    /// The domain for the entity that owns this IP address.
     pub domain: String,
 
+    /// The type of entity that owns this IP address. (i.e., business, education, hosting, isp)
     #[serde(rename = "type")]
     pub company_type: String,
 }
 
+/// Mobile carrier details.
 #[derive(Debug, Deserialize, Clone)]
 pub struct CarrierDetails {
+    /// The name of the carrier ISP that owns that mobile IP address.
     pub name: String,
+
+    /// MCC GSM network code of this carrier.
     pub mcc: String,
+
+    /// MNC GSM network code of this carrier.
     pub mnc: String,
 }
