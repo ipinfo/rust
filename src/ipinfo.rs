@@ -109,16 +109,31 @@ impl IpInfo {
             .json(&json!(misses))
             .send()?;
 
-        match response.status() {
-            reqwest::StatusCode::TOO_MANY_REQUESTS => Err(err!(RateLimitExceededError)),
-            _ => {
-                let resp: HashMap<String, IpDetails> = response.error_for_status()?.json()?;
-                resp.iter().for_each(|x| {
-                    self.cache.put(x.0.clone(), x.1.clone());
-                });
-                Ok(resp)
-            }
+        // Check if we exhausted our request quota
+        if let reqwest::StatusCode::TOO_MANY_REQUESTS = response.status() {
+            return Err(err!(RateLimitExceededError));
         }
+
+        // Acquire response
+        let raw_resp = response.error_for_status()?.text()?;
+
+        // Parse the response
+        let resp: serde_json::Value = serde_json::from_str(&raw_resp)?;
+
+        // Return if an error occurred
+        if let Some(e) = resp["error"].as_str() {
+            return Err(err!(IpRequestError, e));
+        }
+
+        // Parse the results
+        let details: HashMap<String, IpDetails> = serde_json::from_str(&raw_resp)?;
+
+        // Update cache
+        details.iter().for_each(|x| {
+            self.cache.put(x.0.clone(), x.1.clone());
+        });
+
+        Ok(details)
     }
 
     /// Construct API request headers.
@@ -137,6 +152,8 @@ impl IpInfo {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::IpErrorKind;
+    use mockito::mock;
 
     #[test]
     fn ipinfo_config_defaults_reasonable() {
@@ -156,5 +173,91 @@ mod tests {
         );
         assert_eq!(headers[CONTENT_TYPE], "application/json");
         assert_eq!(headers[ACCEPT], "application/json");
+    }
+
+    #[test]
+    fn request_single_ip_without_token() {
+        let _m = mock("POST", "/batch")
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body(
+                r#"{
+                "error": "API token required"
+                }"#,
+            )
+            .create();
+
+        let mut ipinfo = IpInfo::new(Default::default()).expect("should construct");
+
+        assert_eq!(
+            ipinfo.lookup(&["8.8.8.8"]).err().unwrap().kind(),
+            IpErrorKind::IpRequestError
+        );
+    }
+
+    #[test]
+    fn request_multiple_ip_with_token() {
+        let _m = mock("POST", "/batch")
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body(
+                r#"{
+                  "8.8.8.8": {
+                    "ip": "8.8.8.8",
+                    "hostname": "dns.google",
+                    "city": "Mountain View",
+                    "region": "California",
+                    "country": "US",
+                    "loc": "37.3860,-122.0838",
+                    "org": "AS15169 Google LLC",
+                    "postal": "94035",
+                    "timezone": "America/Los_Angeles"
+                  },
+                  "4.2.2.4": {
+                    "ip": "4.2.2.4",
+                    "hostname": "d.resolvers.level3.net",
+                    "city": "",
+                    "region": "",
+                    "country": "US",
+                    "loc": "37.7510,-97.8220",
+                    "org": "AS3356 Level 3 Parent, LLC"
+                  }
+              }"#,
+            )
+            .create();
+
+        let mut ipinfo = IpInfo::new(Default::default()).expect("should construct");
+
+        let details = ipinfo
+            .lookup(&["8.8.8.8", "4.2.2.4"])
+            .expect("should lookup");
+
+        // Assert successful lookup
+        assert!(details.contains_key("8.8.8.8"));
+        assert!(details.contains_key("4.2.2.4"));
+
+        // Assert 8.8.8.8
+        let ip8 = &details["8.8.8.8"];
+        assert_eq!(ip8.ip, "8.8.8.8");
+        assert_eq!(ip8.hostname, "dns.google");
+        assert_eq!(ip8.city, "Mountain View");
+        assert_eq!(ip8.region, "California");
+        assert_eq!(ip8.country, "US");
+        assert_eq!(ip8.loc, "37.3860,-122.0838");
+        assert_eq!(ip8.org, Some("AS15169 Google LLC".to_owned()));
+        assert_eq!(ip8.postal, Some("94035".to_owned()));
+        assert_eq!(ip8.timezone, Some("America/Los_Angeles".to_owned()));
+
+        // Assert 4.2.2.4
+        let ip4 = &details["4.2.2.4"];
+        assert_eq!(ip4.ip, "4.2.2.4");
+        assert_eq!(ip4.hostname, "d.resolvers.level3.net");
+        assert_eq!(ip4.city, "");
+        assert_eq!(ip4.region, "");
+        assert_eq!(ip4.country, "US");
+        assert_eq!(ip4.loc, "37.7510,-97.8220");
+        assert_eq!(ip4.org, Some("AS3356 Level 3 Parent, LLC".to_owned()));
+        assert_eq!(ip4.postal, None);
+        assert_eq!(ip4.timezone, None);
     }
 }

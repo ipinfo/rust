@@ -91,7 +91,7 @@ impl IpError {
     /// ```
     pub fn new(kind: IpErrorKind, description: Option<&str>) -> Self {
         Self {
-            kind: kind,
+            kind,
             description: description.map(|desc| desc.to_string()),
         }
     }
@@ -129,7 +129,7 @@ impl Error for IpError {
 impl From<IpErrorKind> for IpError {
     fn from(kind: IpErrorKind) -> Self {
         Self {
-            kind: kind,
+            kind,
             description: None,
         }
     }
@@ -138,7 +138,10 @@ impl From<IpErrorKind> for IpError {
 impl From<reqwest::Error> for IpError {
     fn from(err: reqwest::Error) -> Self {
         match err.status() {
-            Some(status) => err!(HTTPClientError, &format!("{}: {}", status, &err.to_string())),
+            Some(status) => err!(
+                HTTPClientError,
+                &format!("{}: {}", status, &err.to_string())
+            ),
             None => err!(HTTPClientError, &err.to_string()),
         }
     }
@@ -164,14 +167,8 @@ mod tests {
             IpErrorKind::RateLimitExceededError.to_string(),
             "rate limit exceeded"
         );
-        assert_eq!(
-            IpErrorKind::IpRequestError.to_string(),
-            "application error"
-        );
-        assert_eq!(
-            IpErrorKind::ParseError.to_string(),
-            "parse error"
-        );
+        assert_eq!(IpErrorKind::IpRequestError.to_string(), "application error");
+        assert_eq!(IpErrorKind::ParseError.to_string(), "parse error");
     }
 
     #[test]
