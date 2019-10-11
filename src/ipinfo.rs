@@ -92,13 +92,11 @@ impl IpInfo {
         let mut misses: Vec<&str> = vec![];
 
         // Check for cache hits
-        ips.iter().for_each(|x| {
-            if let Some(detail) = self.cache.get(&x.to_string()) {
-                hits.push(detail.clone());
-            } else {
-                misses.push(*x);
-            }
-        });
+        ips.iter()
+            .for_each(|x| match self.cache.get(&x.to_string()) {
+                Some(detail) => hits.push(detail.clone()),
+                None => misses.push(*x),
+            });
 
         // Lookup cache misses
         let response = self
@@ -126,11 +124,16 @@ impl IpInfo {
         }
 
         // Parse the results
-        let details: HashMap<String, IpDetails> = serde_json::from_str(&raw_resp)?;
+        let mut details: HashMap<String, IpDetails> = serde_json::from_str(&raw_resp)?;
 
         // Update cache
         details.iter().for_each(|x| {
             self.cache.put(x.0.clone(), x.1.clone());
+        });
+
+        // Add cache hits to the result
+        hits.iter().for_each(|x| {
+            details.insert(x.ip.clone(), x.clone());
         });
 
         Ok(details)
