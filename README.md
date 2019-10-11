@@ -29,12 +29,25 @@ information on an IP address and make more requests per day see [https://ipinfo.
 ## Example
 
 ```rust
-use ipinfo::*;
+use ipinfo::{IpInfo, IpInfoConfig};
 
 fn main() {
-  // example here
+  let config = IpInfoConfig { token: Some("my token".to_string()), ..Default::default() };
+  let mut ipinfo = IpInfo::new(config).expect("should construct");
+  let res = ipinfo.lookup(&["8.8.8.8", "4.2.2.4"]);
+
+  match res {
+    Ok(r) => println!("{}: {}", "8.8.8.8", r["8.8.8.8"].hostname),
+    Err(e) => println!("error occurred: {}", &e.to_string()),
+  }
 }
 ```
+
+## Features
+
+* Smart LRU cache for cost and quota savings.
+* Structured and type checked query results.
+* Bulk IP address lookup using IPinfo batch API.
 
 ## Other Libraries
 
