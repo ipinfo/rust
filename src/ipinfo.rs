@@ -70,9 +70,9 @@ impl IpInfo {
         let url = "https://ipinfo.io".to_owned();
 
         Ok(Self {
-            url: url,
+            url,
+            client,
             token: config.token,
-            client: client,
             cache: LruCache::new(config.cache_size),
         })
     }
