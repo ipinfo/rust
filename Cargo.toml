@@ -5,15 +5,15 @@ version = "0.1.1"
 authors = ["Amr Ali <amralicc@gmail.com>"]
 edition = "2018"
 license = "Apache-2.0"
-homepage = "https://github.com/amrali/ipinfo-rs/"
+homepage = "https://github.com/ipinfo/rust/"
 readme = "README.md"
 categories = ["network-programming"]
 keywords = ["ip", "geolocation", "ipinfo", "ip-address"]
 exclude = [".gitignore", ".travis.yml", ".cargo/config"]
 
 [badges]
-travis-ci = { repository = "amrali/ipinfo-rs", branch = "master" }
-codecov = { repository = "amrali/ipinfo-rs", branch = "master", service = "github" }
+travis-ci = { repository = "ipinfo/rust", branch = "master" }
+codecov = { repository = "ipinfo/rust", branch = "master", service = "github" }
 
 [dependencies]
 reqwest = "0.9"

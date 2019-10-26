@@ -72,4 +72,4 @@ Our API handles over 12 billion requests a month for 100,000 businesses and deve
 
 [![image](https://avatars3.githubusercontent.com/u/15721521?s=128&u=7bb7dde5c4991335fb234e68a30971944abc6bf3&v=4)](https://ipinfo.io/)
 
-[contributing]: https://github.com/amrali/waver/blob/master/CONTRIBUTING.md
+[contributing]: https://github.com/ipinfo/rust/blob/master/CONTRIBUTING.md
