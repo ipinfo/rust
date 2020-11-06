@@ -19,7 +19,9 @@ use crate::{IpDetails, IpError, VERSION};
 use lru::LruCache;
 use serde_json::json;
 
-use reqwest::header::{HeaderMap, HeaderValue, ACCEPT, CONTENT_TYPE, USER_AGENT};
+use reqwest::header::{
+    HeaderMap, HeaderValue, ACCEPT, CONTENT_TYPE, USER_AGENT,
+};
 
 /// IpInfo structure configuration.
 pub struct IpInfoConfig {
@@ -62,7 +64,8 @@ impl IpInfo {
     /// let ipinfo = IpInfo::new(Default::default()).expect("should construct");
     /// ```
     pub fn new(config: IpInfoConfig) -> Result<Self, IpError> {
-        let client = reqwest::Client::builder().timeout(config.timeout).build()?;
+        let client =
+            reqwest::Client::builder().timeout(config.timeout).build()?;
 
         #[cfg(test)]
         let url = mockito::server_url();
@@ -87,7 +90,10 @@ impl IpInfo {
     /// let mut ipinfo = IpInfo::new(Default::default()).expect("should construct");
     /// let res = ipinfo.lookup(&["8.8.8.8"]).expect("should run");
     /// ```
-    pub fn lookup(&mut self, ips: &[&str]) -> Result<HashMap<String, IpDetails>, IpError> {
+    pub fn lookup(
+        &mut self,
+        ips: &[&str],
+    ) -> Result<HashMap<String, IpDetails>, IpError> {
         let mut hits: Vec<IpDetails> = vec![];
         let mut misses: Vec<&str> = vec![];
 
@@ -124,7 +130,8 @@ impl IpInfo {
         }
 
         // Parse the results
-        let mut details: HashMap<String, IpDetails> = serde_json::from_str(&raw_resp)?;
+        let mut details: HashMap<String, IpDetails> =
+            serde_json::from_str(&raw_resp)?;
 
         // Update cache
         details.iter().for_each(|x| {
@@ -144,9 +151,13 @@ impl IpInfo {
         let mut headers = HeaderMap::new();
         headers.insert(
             USER_AGENT,
-            HeaderValue::from_str(&format!("IPinfoClient/Rust/{}", VERSION)).unwrap(),
+            HeaderValue::from_str(&format!("IPinfoClient/Rust/{}", VERSION))
+                .unwrap(),
         );
-        headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
+        headers.insert(
+            CONTENT_TYPE,
+            HeaderValue::from_static("application/json"),
+        );
         headers.insert(ACCEPT, HeaderValue::from_static("application/json"));
         headers
     }
@@ -190,7 +201,8 @@ mod tests {
             )
             .create();
 
-        let mut ipinfo = IpInfo::new(Default::default()).expect("should construct");
+        let mut ipinfo =
+            IpInfo::new(Default::default()).expect("should construct");
 
         assert_eq!(
             ipinfo.lookup(&["8.8.8.8"]).err().unwrap().kind(),
@@ -229,7 +241,8 @@ mod tests {
             )
             .create();
 
-        let mut ipinfo = IpInfo::new(Default::default()).expect("should construct");
+        let mut ipinfo =
+            IpInfo::new(Default::default()).expect("should construct");
 
         let details = ipinfo
             .lookup(&["8.8.8.8", "4.2.2.4"])
@@ -286,7 +299,8 @@ mod tests {
             )
             .create();
 
-        let mut ipinfo = IpInfo::new(Default::default()).expect("should construct");
+        let mut ipinfo =
+            IpInfo::new(Default::default()).expect("should construct");
 
         // Populate the cache with 8.8.8.8
         let details = ipinfo.lookup(&["8.8.8.8"]).expect("should lookup");
@@ -314,7 +328,9 @@ mod tests {
             )
             .create();
 
-        let details = ipinfo.lookup(&["4.2.2.4", "8.8.8.8"]).expect("should lookup");
+        let details = ipinfo
+            .lookup(&["4.2.2.4", "8.8.8.8"])
+            .expect("should lookup");
 
         // Assert 2 results
         assert!(details.contains_key("8.8.8.8"));

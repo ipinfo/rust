@@ -167,7 +167,10 @@ mod tests {
             IpErrorKind::RateLimitExceededError.to_string(),
             "rate limit exceeded"
         );
-        assert_eq!(IpErrorKind::IpRequestError.to_string(), "application error");
+        assert_eq!(
+            IpErrorKind::IpRequestError.to_string(),
+            "application error"
+        );
         assert_eq!(IpErrorKind::ParseError.to_string(), "parse error");
     }
 
