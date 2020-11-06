@@ -29,7 +29,7 @@
 //! * Bulk IP address lookup using IPinfo batch API.
 //! ## Example
 //!
-//! ```norun
+//! ```no_run
 //! use ipinfo::{IpInfo, IpInfoConfig};
 //!
 //! fn main() {

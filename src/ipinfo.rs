@@ -84,7 +84,7 @@ impl IpInfo {
     ///
     /// # Examples
     ///
-    /// ```norun
+    /// ```no_run
     /// use ipinfo::IpInfo;
     ///
     /// let mut ipinfo = IpInfo::new(Default::default()).expect("should construct");
