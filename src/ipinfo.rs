@@ -67,9 +67,6 @@ impl IpInfo {
         let client =
             reqwest::Client::builder().timeout(config.timeout).build()?;
 
-        #[cfg(test)]
-        let url = mockito::server_url();
-        #[cfg(not(test))]
         let url = "https://ipinfo.io".to_owned();
 
         Ok(Self {
@@ -167,7 +164,15 @@ impl IpInfo {
 mod tests {
     use super::*;
     use crate::IpErrorKind;
-    use mockito::mock;
+    use std::env;
+
+    fn get_ipinfo_client() -> IpInfo {
+        return IpInfo::new(IpInfoConfig{
+            token: Some(env::var("IPINFO_TOKEN").unwrap().to_string()),
+            timeout: Duration::from_secs(3),
+            cache_size: 100,
+        }).expect("should construct");
+    }
 
     #[test]
     fn ipinfo_config_defaults_reasonable() {
@@ -190,17 +195,19 @@ mod tests {
     }
 
     #[test]
-    fn request_single_ip_without_token() {
-        let _m = mock("POST", "/batch")
-            .with_status(200)
-            .with_header("content-type", "application/json")
-            .with_body(
-                r#"{
-                "error": "API token required"
-                }"#,
-            )
-            .create();
+    fn request_single_ip() {
+        let mut ipinfo = get_ipinfo_client();
 
+        let details = ipinfo
+            .lookup(&["66.87.125.72"])
+            .expect("should lookup");
+
+        assert!(details.contains_key("66.87.125.72"));
+        assert_eq!(details.len(), 1);
+    }
+
+    #[test]
+    fn request_single_ip_no_token() {
         let mut ipinfo =
             IpInfo::new(Default::default()).expect("should construct");
 
@@ -211,38 +218,8 @@ mod tests {
     }
 
     #[test]
-    fn request_multiple_ip_with_token() {
-        let _m = mock("POST", "/batch")
-            .with_status(200)
-            .with_header("content-type", "application/json")
-            .with_body(
-                r#"{
-                  "8.8.8.8": {
-                    "ip": "8.8.8.8",
-                    "hostname": "dns.google",
-                    "city": "Mountain View",
-                    "region": "California",
-                    "country": "US",
-                    "loc": "37.3860,-122.0838",
-                    "org": "AS15169 Google LLC",
-                    "postal": "94035",
-                    "timezone": "America/Los_Angeles"
-                  },
-                  "4.2.2.4": {
-                    "ip": "4.2.2.4",
-                    "hostname": "d.resolvers.level3.net",
-                    "city": "",
-                    "region": "",
-                    "country": "US",
-                    "loc": "37.7510,-97.8220",
-                    "org": "AS3356 Level 3 Parent, LLC"
-                  }
-              }"#,
-            )
-            .create();
-
-        let mut ipinfo =
-            IpInfo::new(Default::default()).expect("should construct");
+    fn request_multiple_ip() {
+        let mut ipinfo = get_ipinfo_client();
 
         let details = ipinfo
             .lookup(&["8.8.8.8", "4.2.2.4"])
@@ -259,48 +236,25 @@ mod tests {
         assert_eq!(ip8.city, "Mountain View");
         assert_eq!(ip8.region, "California");
         assert_eq!(ip8.country, "US");
-        assert_eq!(ip8.loc, "37.3860,-122.0838");
-        assert_eq!(ip8.org, Some("AS15169 Google LLC".to_owned()));
-        assert_eq!(ip8.postal, Some("94035".to_owned()));
+        assert_eq!(ip8.loc, "37.4056,-122.0775");
+        assert_eq!(ip8.postal, Some("94043".to_owned()));
         assert_eq!(ip8.timezone, Some("America/Los_Angeles".to_owned()));
 
         // Assert 4.2.2.4
         let ip4 = &details["4.2.2.4"];
         assert_eq!(ip4.ip, "4.2.2.4");
         assert_eq!(ip4.hostname, "d.resolvers.level3.net");
-        assert_eq!(ip4.city, "");
-        assert_eq!(ip4.region, "");
+        assert_eq!(ip4.city, "Monroe");
+        assert_eq!(ip4.region, "Louisiana");
         assert_eq!(ip4.country, "US");
-        assert_eq!(ip4.loc, "37.7510,-97.8220");
-        assert_eq!(ip4.org, Some("AS3356 Level 3 Parent, LLC".to_owned()));
-        assert_eq!(ip4.postal, None);
-        assert_eq!(ip4.timezone, None);
+        assert_eq!(ip4.loc, "32.5530,-92.0422");
+        assert_eq!(ip4.postal, Some("71203".to_owned()));
+        assert_eq!(ip4.timezone, Some("America/Chicago".to_owned()));
     }
 
     #[test]
     fn request_cache_miss_and_hit() {
-        let _m = mock("POST", "/batch")
-            .with_status(200)
-            .with_header("content-type", "application/json")
-            .with_body(
-                r#"{
-                  "8.8.8.8": {
-                    "ip": "8.8.8.8",
-                    "hostname": "dns.google",
-                    "city": "Mountain View",
-                    "region": "California",
-                    "country": "US",
-                    "loc": "37.3860,-122.0838",
-                    "org": "AS15169 Google LLC",
-                    "postal": "94035",
-                    "timezone": "America/Los_Angeles"
-                  }
-              }"#,
-            )
-            .create();
-
-        let mut ipinfo =
-            IpInfo::new(Default::default()).expect("should construct");
+        let mut ipinfo = get_ipinfo_client();
 
         // Populate the cache with 8.8.8.8
         let details = ipinfo.lookup(&["8.8.8.8"]).expect("should lookup");
@@ -310,24 +264,6 @@ mod tests {
         assert_eq!(details.len(), 1);
 
         // Should have a cache hit for 8.8.8.8 and query for 4.2.2.4
-        let _m = mock("POST", "/batch")
-            .with_status(200)
-            .with_header("content-type", "application/json")
-            .with_body(
-                r#"{
-                  "4.2.2.4": {
-                    "ip": "4.2.2.4",
-                    "hostname": "d.resolvers.level3.net",
-                    "city": "",
-                    "region": "",
-                    "country": "US",
-                    "loc": "37.7510,-97.8220",
-                    "org": "AS3356 Level 3 Parent, LLC"
-                  }
-              }"#,
-            )
-            .create();
-
         let details = ipinfo
             .lookup(&["4.2.2.4", "8.8.8.8"])
             .expect("should lookup");

@@ -40,14 +40,14 @@ pub struct IpDetails {
     /// The geographical location for the IP address.
     pub loc: String,
 
+    /// The organization for the IP address.
+    pub org: Option<String>,
+
     /// The postal code for the IP address.
     pub postal: Option<String>,
 
     /// The timezone for the IP address.
     pub timezone: Option<String>,
-
-    /// The organization for the IP address.
-    pub org: Option<String>,
 
     /// The AS details the IP address is part of.
     pub asn: Option<AsnDetails>,
@@ -57,6 +57,15 @@ pub struct IpDetails {
 
     /// The carrier details that owns this mobile IP address.
     pub carrier: Option<CarrierDetails>,
+
+    /// The privacy details for the IP address.
+    pub privacy: Option<PrivacyDetails>,
+
+    /// The abuse details for the IP address.
+    pub abuse: Option<AbuseDetails>,
+
+    /// The hosted domains details for the IP address.
+    pub domains: Option<DomainsDetails>,
 
     #[serde(flatten)]
     pub extra: HashMap<String, Value>,
@@ -107,4 +116,55 @@ pub struct CarrierDetails {
 
     /// MNC GSM network code of this carrier.
     pub mnc: String,
+}
+
+/// Privacy details.
+#[derive(Debug, Deserialize, Clone)]
+pub struct PrivacyDetails {
+    /// Whether this IP address belongs to a VPN.
+    pub vpn: bool,
+
+    /// Whether this IP address belongs to a proxy.
+    pub proxy: bool,
+
+    /// Whether this IP address is using Tor.
+    pub tor: bool,
+
+    /// Whether this IP address is from a hosting provider.
+    pub hosting: bool,
+}
+
+/// Abuse details.
+#[derive(Debug, Deserialize, Clone)]
+pub struct AbuseDetails {
+    /// The abuse contact's address.
+    pub address: String,
+
+    /// The abuse contact's country.
+    pub country: String,
+
+    /// The abuse contact's email.
+    pub email: String,
+
+    /// The abuse contact's name.
+    pub name: String,
+
+    /// The abuse contact's network range.
+    pub network: String,
+
+    /// The abuse contact's phone number.
+    pub phone: String,
+}
+
+/// Domains details.
+#[derive(Debug, Deserialize, Clone)]
+pub struct DomainsDetails {
+    /// The IP address associated with these hosted domains details.
+    pub ip: Option<String>,
+
+    /// The actual total number of domains hosted on this IP address.
+    pub total: u64,
+
+    /// A sample list of hosted domains on this IP address.
+    pub domains: Vec<String>,
 }
