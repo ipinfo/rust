@@ -21,9 +21,6 @@ lru = "0.6"
 serde = "1.0"
 serde_json = "1.0"
 
-[dev-dependencies]
-mockito = "0.28"
-
 [profile.release]
 overflow-checks = true
 lto = true
