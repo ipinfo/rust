@@ -40,14 +40,14 @@ pub struct IpDetails {
     /// The geographical location for the IP address.
     pub loc: String,
 
+    /// The organization for the IP address.
+    pub org: Option<String>,
+
     /// The postal code for the IP address.
     pub postal: Option<String>,
 
     /// The timezone for the IP address.
     pub timezone: Option<String>,
-
-    /// The organization for the IP address.
-    pub org: Option<String>,
 
     /// The AS details the IP address is part of.
     pub asn: Option<AsnDetails>,
@@ -57,6 +57,15 @@ pub struct IpDetails {
 
     /// The carrier details that owns this mobile IP address.
     pub carrier: Option<CarrierDetails>,
+
+    /// TODO
+    pub privacy: Option<PrivacyDetails>,
+
+    /// TODO
+    pub abuse: Option<AbuseDetails>,
+
+    /// TODO
+    pub domains: Option<DomainsDetails>,
 
     #[serde(flatten)]
     pub extra: HashMap<String, Value>,
@@ -107,4 +116,55 @@ pub struct CarrierDetails {
 
     /// MNC GSM network code of this carrier.
     pub mnc: String,
+}
+
+/// Privacy details.
+#[derive(Debug, Deserialize, Clone)]
+pub struct PrivacyDetails {
+    /// TODO
+    pub vpn: bool,
+
+    /// TODO
+    pub proxy: bool,
+
+    /// TODO
+    pub tor: bool,
+
+    /// TODO
+    pub hosting: bool,
+}
+
+/// Abuse details.
+#[derive(Debug, Deserialize, Clone)]
+pub struct AbuseDetails {
+    /// TODO
+    pub address: String,
+
+    /// TODO
+    pub country: String,
+
+    /// TODO
+    pub email: String,
+
+    /// TODO
+    pub name: String,
+
+    /// TODO
+    pub network: String,
+
+    /// TODO
+    pub phone: String,
+}
+
+/// Domains details.
+#[derive(Debug, Deserialize, Clone)]
+pub struct DomainsDetails {
+    /// TODO
+    pub ip: Option<String>,
+
+    /// TODO
+    pub total: u64,
+
+    /// TODO
+    pub domains: Vec<String>,
 }
