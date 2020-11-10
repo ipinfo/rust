@@ -11,3 +11,8 @@ Cargo.lock
 
 # ViM Swap files
 **/*.swp
+
+# editor meta
+.vim/
+.vscode/
+.idea/

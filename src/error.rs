@@ -114,17 +114,13 @@ impl IpError {
 impl fmt::Display for IpError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.description {
-            Some(ref desc) => write!(f, "{}: {}", self.description(), desc),
-            None => write!(f, "{}", self.description()),
+            Some(ref desc) => write!(f, "{}: {}", self.kind.as_str(), desc),
+            None => write!(f, "{}", self.kind.as_str()),
         }
     }
 }
 
-impl Error for IpError {
-    fn description(&self) -> &str {
-        self.kind.as_str()
-    }
-}
+impl Error for IpError {}
 
 impl From<IpErrorKind> for IpError {
     fn from(kind: IpErrorKind) -> Self {
@@ -167,7 +163,10 @@ mod tests {
             IpErrorKind::RateLimitExceededError.to_string(),
             "rate limit exceeded"
         );
-        assert_eq!(IpErrorKind::IpRequestError.to_string(), "application error");
+        assert_eq!(
+            IpErrorKind::IpRequestError.to_string(),
+            "application error"
+        );
         assert_eq!(IpErrorKind::ParseError.to_string(), "parse error");
     }
 
@@ -177,7 +176,7 @@ mod tests {
 
         assert_eq!(err.kind(), IpErrorKind::HTTPClientError);
         assert_eq!(err.description, None);
-        assert_eq!(err.description(), "HTTP client library error");
+        assert_eq!(err.to_string(), "HTTP client library error");
     }
 
     #[test]

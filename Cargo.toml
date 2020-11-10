@@ -2,7 +2,7 @@
 name = "ipinfo"
 description = "ipinfo: A Rust library for IPInfo"
 version = "0.1.2"
-authors = ["Amr Ali <amralicc@gmail.com>"]
+authors = ["Amr Ali <amralicc@gmail.com>", "Uman Shahzad <uman@mslm.io>"]
 edition = "2018"
 license = "Apache-2.0"
 homepage = "https://github.com/ipinfo/rust/"
@@ -17,12 +17,12 @@ codecov = { repository = "ipinfo/rust", branch = "master", service = "github" }
 
 [dependencies]
 reqwest = "0.9"
-lru = "0.1"
+lru = "0.6"
 serde = "1.0"
 serde_json = "1.0"
 
 [dev-dependencies]
-mockito = "0.21"
+mockito = "0.28"
 
 [profile.release]
 overflow-checks = true
