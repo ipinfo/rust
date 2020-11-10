@@ -58,13 +58,13 @@ pub struct IpDetails {
     /// The carrier details that owns this mobile IP address.
     pub carrier: Option<CarrierDetails>,
 
-    /// TODO
+    /// The privacy details for the IP address.
     pub privacy: Option<PrivacyDetails>,
 
-    /// TODO
+    /// The abuse details for the IP address.
     pub abuse: Option<AbuseDetails>,
 
-    /// TODO
+    /// The hosted domains details for the IP address.
     pub domains: Option<DomainsDetails>,
 
     #[serde(flatten)]
@@ -121,50 +121,50 @@ pub struct CarrierDetails {
 /// Privacy details.
 #[derive(Debug, Deserialize, Clone)]
 pub struct PrivacyDetails {
-    /// TODO
+    /// Whether this IP address belongs to a VPN.
     pub vpn: bool,
 
-    /// TODO
+    /// Whether this IP address belongs to a proxy.
     pub proxy: bool,
 
-    /// TODO
+    /// Whether this IP address is using Tor.
     pub tor: bool,
 
-    /// TODO
+    /// Whether this IP address is from a hosting provider.
     pub hosting: bool,
 }
 
 /// Abuse details.
 #[derive(Debug, Deserialize, Clone)]
 pub struct AbuseDetails {
-    /// TODO
+    /// The abuse contact's address.
     pub address: String,
 
-    /// TODO
+    /// The abuse contact's country.
     pub country: String,
 
-    /// TODO
+    /// The abuse contact's email.
     pub email: String,
 
-    /// TODO
+    /// The abuse contact's name.
     pub name: String,
 
-    /// TODO
+    /// The abuse contact's network range.
     pub network: String,
 
-    /// TODO
+    /// The abuse contact's phone number.
     pub phone: String,
 }
 
 /// Domains details.
 #[derive(Debug, Deserialize, Clone)]
 pub struct DomainsDetails {
-    /// TODO
+    /// The IP address associated with these hosted domains details.
     pub ip: Option<String>,
 
-    /// TODO
+    /// The actual total number of domains hosted on this IP address.
     pub total: u64,
 
-    /// TODO
+    /// A sample list of hosted domains on this IP address.
     pub domains: Vec<String>,
 }
