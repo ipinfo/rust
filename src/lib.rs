@@ -41,7 +41,7 @@
 //!   let res = ipinfo.lookup(&["8.8.8.8", "4.2.2.4"]);
 //!
 //!   match res {
-//!     Ok(r) => println!("{}: {}", "8.8.8.8", r["8.8.8.8"].hostname),
+//!     Ok(r) => println!("{}: {}", "8.8.8.8", r["8.8.8.8"].hostname.as_ref().unwrap()),
 //!     Err(e) => println!("error occurred: {}", &e.to_string()),
 //!   }
 //! }

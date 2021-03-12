@@ -26,7 +26,7 @@ pub struct IpDetails {
     pub ip: String,
 
     /// The reverse DNS lookup hostname of the IP address.
-    pub hostname: String,
+    pub hostname: Option<String>,
 
     /// The city for the IP address.
     pub city: String,
