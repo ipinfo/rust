@@ -232,7 +232,7 @@ mod tests {
         // Assert 8.8.8.8
         let ip8 = &details["8.8.8.8"];
         assert_eq!(ip8.ip, "8.8.8.8");
-        assert_eq!(ip8.hostname, "dns.google");
+        assert_eq!(ip8.hostname, Some("dns.google".to_owned()));
         assert_eq!(ip8.city, "Mountain View");
         assert_eq!(ip8.region, "California");
         assert_eq!(ip8.country, "US");
@@ -243,7 +243,7 @@ mod tests {
         // Assert 4.2.2.4
         let ip4 = &details["4.2.2.4"];
         assert_eq!(ip4.ip, "4.2.2.4");
-        assert_eq!(ip4.hostname, "d.resolvers.level3.net");
+        assert_eq!(ip4.hostname, Some("d.resolvers.level3.net".to_owned()));
         assert_eq!(ip4.city, "Monroe");
         assert_eq!(ip4.region, "Louisiana");
         assert_eq!(ip4.country, "US");
