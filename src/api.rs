@@ -16,11 +16,11 @@
 
 use std::collections::HashMap;
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 /// IP address lookup details.
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct IpDetails {
     /// The IP address.
     pub ip: String,
@@ -72,7 +72,7 @@ pub struct IpDetails {
 }
 
 /// ASN details.
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct AsnDetails {
     /// The AS number.
     pub asn: String,
@@ -92,7 +92,7 @@ pub struct AsnDetails {
 }
 
 /// Company details.
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct CompanyDetails {
     /// The name of the entity that owns the IP address.
     pub name: String,
@@ -106,7 +106,7 @@ pub struct CompanyDetails {
 }
 
 /// Mobile carrier details.
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct CarrierDetails {
     /// The name of the carrier ISP that owns that mobile IP address.
     pub name: String,
@@ -119,7 +119,7 @@ pub struct CarrierDetails {
 }
 
 /// Privacy details.
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct PrivacyDetails {
     /// Whether this IP address belongs to a VPN.
     pub vpn: bool,
@@ -135,7 +135,7 @@ pub struct PrivacyDetails {
 }
 
 /// Abuse details.
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct AbuseDetails {
     /// The abuse contact's address.
     pub address: String,
@@ -157,7 +157,7 @@ pub struct AbuseDetails {
 }
 
 /// Domains details.
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct DomainsDetails {
     /// The IP address associated with these hosted domains details.
     pub ip: Option<String>,
