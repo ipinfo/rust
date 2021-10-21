@@ -167,11 +167,12 @@ mod tests {
     use std::env;
 
     fn get_ipinfo_client() -> IpInfo {
-        return IpInfo::new(IpInfoConfig{
+        return IpInfo::new(IpInfoConfig {
             token: Some(env::var("IPINFO_TOKEN").unwrap().to_string()),
             timeout: Duration::from_secs(3),
             cache_size: 100,
-        }).expect("should construct");
+        })
+        .expect("should construct");
     }
 
     #[test]
@@ -198,9 +199,7 @@ mod tests {
     fn request_single_ip() {
         let mut ipinfo = get_ipinfo_client();
 
-        let details = ipinfo
-            .lookup(&["66.87.125.72"])
-            .expect("should lookup");
+        let details = ipinfo.lookup(&["66.87.125.72"]).expect("should lookup");
 
         assert!(details.contains_key("66.87.125.72"));
         assert_eq!(details.len(), 1);
