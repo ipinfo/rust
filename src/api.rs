@@ -130,11 +130,14 @@ pub struct PrivacyDetails {
     /// Whether this IP address is using Tor.
     pub tor: bool,
 
+    /// Whether this IP address is a relay.
+    pub relay: bool,
+
     /// Whether this IP address is from a hosting provider.
     pub hosting: bool,
 
-    /// Whether this IP address is a relay.
-    pub relay: bool,
+    /// The service offering the privacy service(s) listed here.
+    pub service: Option<String>,
 }
 
 /// Abuse details.
