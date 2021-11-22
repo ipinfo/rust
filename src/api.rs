@@ -137,7 +137,7 @@ pub struct PrivacyDetails {
     pub hosting: bool,
 
     /// The service offering the privacy service(s) listed here.
-    pub service: Option<String>,
+    pub service: String,
 }
 
 /// Abuse details.
