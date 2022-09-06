@@ -37,6 +37,9 @@ pub struct IpDetails {
     /// The country for the IP address.
     pub country: String,
 
+    /// The countryname for the IP address.
+    pub countryname: Option<String>,
+
     /// The geographical location for the IP address.
     pub loc: String,
 
