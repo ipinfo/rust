@@ -35,7 +35,10 @@ pub struct IpInfoConfig {
     pub cache_size: usize,
 
     /// The file path of `countries.json`
-    pub country_file_path: Option<String>
+    pub country_file_path: Option<String>,
+
+    /// The file path of `eu.json`
+    pub eu_file_path: Option<String>
 }
 
 impl Default for IpInfoConfig {
@@ -45,6 +48,7 @@ impl Default for IpInfoConfig {
             timeout: Duration::from_secs(3),
             cache_size: 100,
             country_file_path: None,
+            eu_file_path: None,
         }
     }
 }
@@ -55,7 +59,8 @@ pub struct IpInfo {
     token: Option<String>,
     client: reqwest::Client,
     cache: LruCache<String, IpDetails>,
-    country_file_path: Option<String>
+    country_file_path: Option<String>,
+    eu_file_path: Option<String>
 }
 
 impl IpInfo {
@@ -79,7 +84,8 @@ impl IpInfo {
             client,
             token: config.token,
             cache: LruCache::new(config.cache_size),
-            country_file_path: config.country_file_path 
+            country_file_path: config.country_file_path,
+            eu_file_path: config.eu_file_path, 
         })
     }
 
@@ -101,6 +107,8 @@ impl IpInfo {
         let mut misses: Vec<&str> = vec![];
         let country_json_file = fs::File::open(self.country_file_path.as_ref().unwrap_or(&"./src/countries.json".to_string())).expect("error opening file!");
         let countries: HashMap<String,String> = serde_json::from_reader(country_json_file).expect("error parsing JSON!");
+        let eu_json_file = fs::File::open(self.eu_file_path.as_ref().unwrap_or(&"./src/eu.json".to_string())).expect("error opening file!");
+        let eu_countries: Vec<String> = serde_json::from_reader(eu_json_file).expect("error parsing JSON!");
 
         // Check for cache hits
         ips.iter()
@@ -138,10 +146,15 @@ impl IpInfo {
         let mut details: HashMap<String, IpDetails> =
             serde_json::from_str(&raw_resp)?;
 
-        // Add country_name to response
+        // Add country_name and EU status to response
         for detail in details.to_owned() {
-            let country_name = countries.get(&details.get(&detail.0).unwrap().country).unwrap();
-            details.get_mut(&detail.0).unwrap().countryname = Some(country_name.to_string());
+            let mut_details = details.get_mut(&detail.0).unwrap();
+            let country = &mut_details.country;
+            if !country.is_empty() {
+                let country_name = countries.get(&mut_details.country).unwrap();
+                mut_details.countryname = Some(country_name.to_string());
+                mut_details.is_eu = Some(eu_countries.contains(country));
+            }
         }
 
         // Update cache
@@ -183,6 +196,7 @@ mod tests {
     fn get_ipinfo_client() -> IpInfo {
         return IpInfo::new(IpInfoConfig {
             country_file_path: None,
+            eu_file_path: None,
             token: Some(env::var("IPINFO_TOKEN").unwrap().to_string()),
             timeout: Duration::from_secs(3),
             cache_size: 100,

@@ -40,6 +40,9 @@ pub struct IpDetails {
     /// The countryname for the IP address.
     pub countryname: Option<String>,
 
+    /// EU status of the country.
+    pub is_eu: Option<bool>,
+
     /// The geographical location for the IP address.
     pub loc: String,
 
