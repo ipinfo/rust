@@ -38,7 +38,7 @@ pub struct IpDetails {
     pub country: String,
 
     /// The countryname for the IP address.
-    pub countryname: Option<String>,
+    pub country_name: Option<String>,
 
     /// EU status of the country.
     pub is_eu: Option<bool>,

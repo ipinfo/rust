@@ -12,7 +12,7 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-use std::{fs,collections::HashMap, time::Duration};
+use std::{fs, collections::HashMap, time::Duration};
 
 use crate::{IpDetails, IpError, VERSION};
 
@@ -47,8 +47,8 @@ impl Default for IpInfoConfig {
             token: None,
             timeout: Duration::from_secs(3),
             cache_size: 100,
-            country_file_path: None,
-            eu_file_path: None,
+            country_file_path: Some("./src/countries.json".to_string()),
+            eu_file_path: Some("./src/eu.json".to_string()),
         }
     }
 }
@@ -105,9 +105,9 @@ impl IpInfo {
     ) -> Result<HashMap<String, IpDetails>, IpError> {
         let mut hits: Vec<IpDetails> = vec![];
         let mut misses: Vec<&str> = vec![];
-        let country_json_file = fs::File::open(self.country_file_path.as_ref().unwrap_or(&"./src/countries.json".to_string())).expect("error opening file!");
+        let country_json_file = fs::File::open(self.country_file_path.as_ref().unwrap()).expect("error opening file");
         let countries: HashMap<String,String> = serde_json::from_reader(country_json_file).expect("error parsing JSON!");
-        let eu_json_file = fs::File::open(self.eu_file_path.as_ref().unwrap_or(&"./src/eu.json".to_string())).expect("error opening file!");
+        let eu_json_file = fs::File::open(self.eu_file_path.as_ref().unwrap()).expect("error opening file!");
         let eu_countries: Vec<String> = serde_json::from_reader(eu_json_file).expect("error parsing JSON!");
 
         // Check for cache hits
@@ -152,7 +152,7 @@ impl IpInfo {
             let country = &mut_details.country;
             if !country.is_empty() {
                 let country_name = countries.get(&mut_details.country).unwrap();
-                mut_details.countryname = Some(country_name.to_string());
+                mut_details.country_name = Some(country_name.to_string());
                 mut_details.is_eu = Some(eu_countries.contains(country));
             }
         }
@@ -195,11 +195,10 @@ mod tests {
 
     fn get_ipinfo_client() -> IpInfo {
         return IpInfo::new(IpInfoConfig {
-            country_file_path: None,
-            eu_file_path: None,
             token: Some(env::var("IPINFO_TOKEN").unwrap().to_string()),
             timeout: Duration::from_secs(3),
             cache_size: 100,
+            ..Default::default()
         })
         .expect("should construct");
     }
