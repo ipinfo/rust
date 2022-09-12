@@ -12,7 +12,7 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-use std::{collections::HashMap, time::Duration};
+use std::{fs, collections::HashMap, time::Duration};
 
 use crate::{IpDetails, IpError, VERSION};
 
@@ -33,6 +33,12 @@ pub struct IpInfoConfig {
 
     /// The size of the LRU cache. (default: 100 IPs)
     pub cache_size: usize,
+
+    /// The file path of `countries.json`
+    pub country_file_path: Option<String>,
+
+    /// The file path of `eu.json`
+    pub eu_file_path: Option<String>
 }
 
 impl Default for IpInfoConfig {
@@ -41,6 +47,8 @@ impl Default for IpInfoConfig {
             token: None,
             timeout: Duration::from_secs(3),
             cache_size: 100,
+            country_file_path: Some("./src/countries.json".to_string()),
+            eu_file_path: Some("./src/eu.json".to_string()),
         }
     }
 }
@@ -51,6 +59,8 @@ pub struct IpInfo {
     token: Option<String>,
     client: reqwest::Client,
     cache: LruCache<String, IpDetails>,
+    country_file_path: Option<String>,
+    eu_file_path: Option<String>
 }
 
 impl IpInfo {
@@ -74,6 +84,8 @@ impl IpInfo {
             client,
             token: config.token,
             cache: LruCache::new(config.cache_size),
+            country_file_path: config.country_file_path,
+            eu_file_path: config.eu_file_path, 
         })
     }
 
@@ -93,6 +105,10 @@ impl IpInfo {
     ) -> Result<HashMap<String, IpDetails>, IpError> {
         let mut hits: Vec<IpDetails> = vec![];
         let mut misses: Vec<&str> = vec![];
+        let country_json_file = fs::File::open(self.country_file_path.as_ref().unwrap()).expect("error opening file");
+        let countries: HashMap<String,String> = serde_json::from_reader(country_json_file).expect("error parsing JSON!");
+        let eu_json_file = fs::File::open(self.eu_file_path.as_ref().unwrap()).expect("error opening file!");
+        let eu_countries: Vec<String> = serde_json::from_reader(eu_json_file).expect("error parsing JSON!");
 
         // Check for cache hits
         ips.iter()
@@ -129,6 +145,17 @@ impl IpInfo {
         // Parse the results
         let mut details: HashMap<String, IpDetails> =
             serde_json::from_str(&raw_resp)?;
+
+        // Add country_name and EU status to response
+        for detail in details.to_owned() {
+            let mut_details = details.get_mut(&detail.0).unwrap();
+            let country = &mut_details.country;
+            if !country.is_empty() {
+                let country_name = countries.get(&mut_details.country).unwrap();
+                mut_details.country_name = Some(country_name.to_string());
+                mut_details.is_eu = Some(eu_countries.contains(country));
+            }
+        }
 
         // Update cache
         details.iter().for_each(|x| {
@@ -171,6 +198,7 @@ mod tests {
             token: Some(env::var("IPINFO_TOKEN").unwrap().to_string()),
             timeout: Duration::from_secs(3),
             cache_size: 100,
+            ..Default::default()
         })
         .expect("should construct");
     }

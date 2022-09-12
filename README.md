@@ -51,6 +51,30 @@ fn main() {
 * Structured and type checked query results.
 * Bulk IP address lookup using IPinfo [batch API](https://ipinfo.io/developers/batch).
 
+#### Internationalization
+
+When looking up an IP address, the `response` includes `country_name` which is the country name based on American English and `is_eu` which returns `true` if the country is a member of the European Union (EU). 
+
+```rust 
+println!("{}: {}", "8.8.8.8", r["8.8.8.8"].country_name) // United States
+println!("{}: {}", "8.8.8.8", r["8.8.8.8"].is_eu) // false
+```
+
+It is possible to return the country name in other languages and change the EU countries by setting the paths of `country_file_path` and `eu_file_path` when creating the `IPinfo` client.
+
+The files must be `.json` files with structures matching the following:
+
+- [countiries.json](./src/countries.json)
+- [eu.json](./src/eu.json)
+
+```rust
+let config = IpInfoConfig {
+    country_file_path: Some("custom.json".to_string()),
+    eu_file_path: Some("custom_eu.json".to_string()),
+    ..Default::default()
+};
+```
+
 ## Other Libraries
 
 There are official IPinfo client libraries available for many languages including
