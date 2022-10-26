@@ -1,0 +1,23 @@
+name: Unit Tests
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build
+      run: cargo build --verbose
+
+    - name: Run tests
+      env: 
+          IPINFO_TOKEN: ${{ secrets.IPINFO_TOKEN }}
+      run: cargo test --verbose
