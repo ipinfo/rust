@@ -19,6 +19,8 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+use crate::CountryFlag;
+
 /// IP address lookup details.
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct IpDetails {
@@ -42,6 +44,9 @@ pub struct IpDetails {
 
     /// EU status of the country.
     pub is_eu: Option<bool>,
+    
+    /// EU status of the country.
+    pub country_flag: Option<CountryFlag>,
 
     /// The geographical location for the IP address.
     pub loc: String,

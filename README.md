@@ -53,19 +53,21 @@ fn main() {
 
 #### Internationalization
 
-When looking up an IP address, the `response` includes `country_name` which is the country name based on American English and `is_eu` which returns `true` if the country is a member of the European Union (EU). 
+When looking up an IP address, the `response` includes `country_name` which is the country name based on American English, `is_eu` which returns `true` if the country is a member of the European Union (EU) and `country_flag` which includes emoji and unicode of a country's flag. 
 
 ```rust 
 println!("{}: {}", "8.8.8.8", r["8.8.8.8"].country_name) // United States
-println!("{}: {}", "8.8.8.8", r["8.8.8.8"].is_eu) // false
+println!("{}: {}", "8.8.8.8", r["8.8.8.8"].is_eu) // Some(false)
+println!("{}: {}", "8.8.8.8", r["8.8.8.8"].country_flag) // Some(CountryFlag { emoji: "🇺🇸", unicode: "U+1F1FA U+1F1F8" })
 ```
 
-It is possible to return the country name in other languages and change the EU countries by setting the paths of `country_file_path` and `eu_file_path` when creating the `IPinfo` client.
+It is possible to return the country name in other languages, change the EU countries and change the flag emoji or unicode by setting the paths of `country_file_path`, `eu_file_path` and `countries_flags_file_path` when creating the `IPinfo` client.
 
 The files must be `.json` files with structures matching the following:
 
 - [countiries.json](./src/countries.json)
 - [eu.json](./src/eu.json)
+- [flags.json](./src/flags.json)
 
 ```rust
 let config = IpInfoConfig {

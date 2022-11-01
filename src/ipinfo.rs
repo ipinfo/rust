@@ -17,6 +17,7 @@ use std::{fs, collections::HashMap, time::Duration};
 use crate::{IpDetails, IpError, VERSION};
 
 use lru::LruCache;
+use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use reqwest::header::{
@@ -38,7 +39,10 @@ pub struct IpInfoConfig {
     pub country_file_path: Option<String>,
 
     /// The file path of `eu.json`
-    pub eu_file_path: Option<String>
+    pub eu_file_path: Option<String>,
+
+    /// The file path of `flags.json`
+    pub countries_flags_file_path: Option<String>
 }
 
 impl Default for IpInfoConfig {
@@ -49,6 +53,7 @@ impl Default for IpInfoConfig {
             cache_size: 100,
             country_file_path: Some("./src/countries.json".to_string()),
             eu_file_path: Some("./src/eu.json".to_string()),
+            countries_flags_file_path: Some("./src/flags.json".to_string()),
         }
     }
 }
@@ -60,7 +65,14 @@ pub struct IpInfo {
     client: reqwest::Client,
     cache: LruCache<String, IpDetails>,
     country_file_path: Option<String>,
-    eu_file_path: Option<String>
+    eu_file_path: Option<String>,
+    countries_flags_file_path: Option<String>
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+pub struct CountryFlag {
+    emoji: String,
+    unicode: String
 }
 
 impl IpInfo {
@@ -85,7 +97,8 @@ impl IpInfo {
             token: config.token,
             cache: LruCache::new(config.cache_size),
             country_file_path: config.country_file_path,
-            eu_file_path: config.eu_file_path, 
+            eu_file_path: config.eu_file_path,
+            countries_flags_file_path: config.countries_flags_file_path, 
         })
     }
 
@@ -109,7 +122,8 @@ impl IpInfo {
         let countries: HashMap<String,String> = serde_json::from_reader(country_json_file).expect("error parsing JSON!");
         let eu_json_file = fs::File::open(self.eu_file_path.as_ref().unwrap()).expect("error opening file!");
         let eu_countries: Vec<String> = serde_json::from_reader(eu_json_file).expect("error parsing JSON!");
-
+        let country_flag_json_file = fs::File::open(self.countries_flags_file_path.as_ref().unwrap()).expect("error opening file");
+        let countries_flags: HashMap<String,CountryFlag> = serde_json::from_reader(country_flag_json_file).expect("error parsing JSON!");
         // Check for cache hits
         ips.iter()
             .for_each(|x| match self.cache.get(&x.to_string()) {
@@ -154,6 +168,8 @@ impl IpInfo {
                 let country_name = countries.get(&mut_details.country).unwrap();
                 mut_details.country_name = Some(country_name.to_string());
                 mut_details.is_eu = Some(eu_countries.contains(country));
+                let country_flag = countries_flags.get(&mut_details.country).unwrap();
+                mut_details.country_flag = Some(country_flag.to_owned());
             }
         }
 
@@ -263,6 +279,7 @@ mod tests {
         assert_eq!(ip8.city, "Mountain View");
         assert_eq!(ip8.region, "California");
         assert_eq!(ip8.country, "US");
+        assert_eq!(ip8.country_flag, Some(CountryFlag{emoji: "🇺🇸".to_owned(), unicode: "U+1F1FA U+1F1F8".to_owned()}));
         assert_eq!(ip8.loc, "37.4056,-122.0775");
         assert_eq!(ip8.postal, Some("94043".to_owned()));
         assert_eq!(ip8.timezone, Some("America/Los_Angeles".to_owned()));
