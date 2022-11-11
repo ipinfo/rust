@@ -43,10 +43,10 @@ pub struct IpDetails {
     /// EU status of the country.
     pub is_eu: Option<bool>,
     
-    /// flag and unicode of the country.
+    /// Flag and unicode of the country.
     pub country_flag: Option<CountryFlag>,
 
-    /// code and symbol of the country's currency.
+    /// Code and symbol of the country's currency.
     pub country_currency: Option<CountryCurrency>,
 
     /// The geographical location for the IP address.
