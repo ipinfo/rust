@@ -19,8 +19,6 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::CountryFlag;
-
 /// IP address lookup details.
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct IpDetails {
@@ -45,8 +43,11 @@ pub struct IpDetails {
     /// EU status of the country.
     pub is_eu: Option<bool>,
     
-    /// EU status of the country.
+    /// Flag and unicode of the country.
     pub country_flag: Option<CountryFlag>,
+
+    /// Code and symbol of the country's currency.
+    pub country_currency: Option<CountryCurrency>,
 
     /// The geographical location for the IP address.
     pub loc: String,
@@ -184,4 +185,18 @@ pub struct DomainsDetails {
 
     /// A sample list of hosted domains on this IP address.
     pub domains: Vec<String>,
+}
+
+/// CountryFlag details.
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+pub struct CountryFlag {
+    pub emoji: String,
+    pub unicode: String
+}
+
+/// CountryCurrency details.
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+pub struct CountryCurrency {
+    pub code: String,
+    pub symbol: String
 }
