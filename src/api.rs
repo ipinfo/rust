@@ -49,6 +49,9 @@ pub struct IpDetails {
     /// Code and symbol of the country's currency.
     pub country_currency: Option<CountryCurrency>,
 
+    /// Code and name of the continent.
+    pub continent: Option<Continent>,
+
     /// The geographical location for the IP address.
     pub loc: String,
 
@@ -199,4 +202,11 @@ pub struct CountryFlag {
 pub struct CountryCurrency {
     pub code: String,
     pub symbol: String
+}
+
+/// Continent details.
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+pub struct Continent {
+    pub code: String,
+    pub name: String
 }

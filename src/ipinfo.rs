@@ -14,7 +14,7 @@
 
 use std::{fs, collections::HashMap, time::Duration};
 
-use crate::{IpDetails, IpError, VERSION, CountryFlag, CountryCurrency};
+use crate::{IpDetails, IpError, VERSION, CountryFlag, CountryCurrency, Continent};
 
 use lru::LruCache;
 use serde_json::json;
@@ -44,7 +44,10 @@ pub struct IpInfoConfig {
     pub countries_flags_file_path: Option<String>,
 
     /// The file path of `currency.json`
-    pub countries_currencies_file_path: Option<String>
+    pub countries_currencies_file_path: Option<String>,
+
+    /// The file path of `continent.json`
+    pub continent_file_path: Option<String>
 }
 
 impl Default for IpInfoConfig {
@@ -56,7 +59,8 @@ impl Default for IpInfoConfig {
             country_file_path: Some("./src/countries.json".to_string()),
             eu_file_path: Some("./src/eu.json".to_string()),
             countries_flags_file_path: Some("./src/flags.json".to_string()),
-            countries_currencies_file_path: Some("./src/currency.json".to_string())
+            countries_currencies_file_path: Some("./src/currency.json".to_string()),
+            continent_file_path: Some("./src/continent.json".to_string())
         }
     }
 }
@@ -70,7 +74,8 @@ pub struct IpInfo {
     country_file_path: Option<String>,
     eu_file_path: Option<String>,
     countries_flags_file_path: Option<String>,
-    countries_currencies_file_path: Option<String>
+    countries_currencies_file_path: Option<String>,
+    continent_file_path: Option<String>
 }
 
 impl IpInfo {
@@ -97,7 +102,8 @@ impl IpInfo {
             country_file_path: config.country_file_path,
             eu_file_path: config.eu_file_path,
             countries_flags_file_path: config.countries_flags_file_path,
-            countries_currencies_file_path: config.countries_currencies_file_path
+            countries_currencies_file_path: config.countries_currencies_file_path,
+            continent_file_path: config.continent_file_path
         })
     }
 
@@ -125,6 +131,8 @@ impl IpInfo {
         let countries_flags: HashMap<String,CountryFlag> = serde_json::from_reader(country_flag_json_file).expect("error parsing JSON!");
         let country_currency_json_file = fs::File::open(self.countries_currencies_file_path.as_ref().unwrap()).expect("error opening file");
         let countries_currencies: HashMap<String,CountryCurrency> = serde_json::from_reader(country_currency_json_file).expect("error parsing JSON!");
+        let continent_json_file = fs::File::open(self.continent_file_path.as_ref().unwrap()).expect("error opening file");
+        let continents: HashMap<String,Continent> = serde_json::from_reader(continent_json_file).expect("error parsing JSON!");
         // Check for cache hits
         ips.iter()
             .for_each(|x| match self.cache.get(&x.to_string()) {
@@ -173,6 +181,8 @@ impl IpInfo {
                 mut_details.country_flag = Some(country_flag.to_owned());
                 let country_currency = countries_currencies.get(&mut_details.country).unwrap();
                 mut_details.country_currency = Some(country_currency.to_owned());
+                let continent = continents.get(&mut_details.country).unwrap();
+                mut_details.continent = Some(continent.to_owned());
             }
         }
 
@@ -284,6 +294,7 @@ mod tests {
         assert_eq!(ip8.country, "US");
         assert_eq!(ip8.country_flag, Some(CountryFlag{emoji: "🇺🇸".to_owned(), unicode: "U+1F1FA U+1F1F8".to_owned()}));
         assert_eq!(ip8.country_currency, Some(CountryCurrency{code: "USD".to_owned(), symbol: "$".to_owned()}));
+        assert_eq!(ip8.continent, Some(Continent{code: "NA".to_owned(), name: "North America".to_owned()}));
         assert_eq!(ip8.loc, "37.4056,-122.0775");
         assert_eq!(ip8.postal, Some("94043".to_owned()));
         assert_eq!(ip8.timezone, Some("America/Los_Angeles".to_owned()));

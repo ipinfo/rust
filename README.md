@@ -53,17 +53,18 @@ fn main() {
 
 #### Internationalization
 
-When looking up an IP address, the `response` includes `country_name` which is the country name based on American English, `is_eu` which returns `true` if the country is a member of the European Union (EU), `country_flag` which includes emoji and unicode of a country's flag and `country_currency` 
-which includes code and symbol of a country's currency. 
+When looking up an IP address, the `response` includes `country_name` which is the country name based on American English, `is_eu` which returns `true` if the country is a member of the European Union (EU), `country_flag` which includes emoji and unicode of a country's flag, `country_currency` 
+which includes code and symbol of a country's currency and `continent` which includes code and name of the continent. 
 
 ```rust 
 println!("{}: {}", "8.8.8.8", r["8.8.8.8"].country_name) // United States
 println!("{}: {}", "8.8.8.8", r["8.8.8.8"].is_eu) // Some(false)
 println!("{}: {}", "8.8.8.8", r["8.8.8.8"].country_flag) // Some(CountryFlag { emoji: "🇺🇸", unicode: "U+1F1FA U+1F1F8" })
 println!("{}: {}", "8.8.8.8", r["8.8.8.8"].country_currency) // Some(CountryCurrency { code: "USD", symbol: "$" })
+println!("{}: {}", "8.8.8.8", r["8.8.8.8"].continent) // Some(Continent { code: "NA", name: "North America" })
 ```
 
-It is possible to return the country name in other languages, change the EU countries and change the flag emoji or unicode by setting the paths of `country_file_path`, `eu_file_path`, `countries_flags_file_path` and `countries_currencies_file_path` when creating the `IPinfo` client.
+It is possible to return the country name in other languages, change the EU countries and change the flag emoji or unicode by setting the paths of `country_file_path`, `eu_file_path`, `countries_flags_file_path`, `countries_currencies_file_path` and `continent_file_path` when creating the `IPinfo` client.
 
 The files must be `.json` files with structures matching the following:
 
@@ -71,6 +72,7 @@ The files must be `.json` files with structures matching the following:
 - [eu.json](./src/eu.json)
 - [flags.json](./src/flags.json)
 - [currency.json](./src/currency.json)
+- [continent.json](./src/continent.json)
 
 ```rust
 let config = IpInfoConfig {
