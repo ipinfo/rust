@@ -1,8 +1,8 @@
 [package]
 name = "ipinfo"
 description = "ipinfo: A Rust library for IPInfo"
-version = "0.3.1"
-authors = ["Amr Ali <amralicc@gmail.com>", "Uman Shahzad <uman@mslm.io>"]
+version = "0.4.0"
+authors = ["Amr Ali <amralicc@gmail.com>", "Uman Shahzad <uman@mslm.io>", "Umar Farooq <umar@ipinfo.io>"]
 edition = "2018"
 license = "Apache-2.0"
 homepage = "https://github.com/ipinfo/rust/"
