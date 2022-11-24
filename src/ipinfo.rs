@@ -12,7 +12,7 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-use std::{fs, collections::HashMap, time::Duration};
+use std::{collections::HashMap, time::Duration};
 
 use crate::{IpDetails, IpError, VERSION, CountryFlag, CountryCurrency, Continent};
 
@@ -22,6 +22,9 @@ use serde_json::json;
 use reqwest::header::{
     HeaderMap, HeaderValue, ACCEPT, CONTENT_TYPE, USER_AGENT,
 };
+
+use include_dir::{include_dir, Dir};
+static ASSETS_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/assets");
 
 /// IpInfo structure configuration.
 pub struct IpInfoConfig {
@@ -56,11 +59,11 @@ impl Default for IpInfoConfig {
             token: None,
             timeout: Duration::from_secs(3),
             cache_size: 100,
-            country_file_path: Some("./src/countries.json".to_string()),
-            eu_file_path: Some("./src/eu.json".to_string()),
-            countries_flags_file_path: Some("./src/flags.json".to_string()),
-            countries_currencies_file_path: Some("./src/currency.json".to_string()),
-            continent_file_path: Some("./src/continent.json".to_string())
+            country_file_path: Some("countries.json".to_string()),
+            eu_file_path: Some("eu.json".to_string()),
+            countries_flags_file_path: Some("flags.json".to_string()),
+            countries_currencies_file_path: Some("currency.json".to_string()),
+            continent_file_path: Some("continent.json".to_string())
         }
     }
 }
@@ -123,16 +126,16 @@ impl IpInfo {
     ) -> Result<HashMap<String, IpDetails>, IpError> {
         let mut hits: Vec<IpDetails> = vec![];
         let mut misses: Vec<&str> = vec![];
-        let country_json_file = fs::File::open(self.country_file_path.as_ref().unwrap()).expect("error opening file");
-        let countries: HashMap<String,String> = serde_json::from_reader(country_json_file).expect("error parsing JSON!");
-        let eu_json_file = fs::File::open(self.eu_file_path.as_ref().unwrap()).expect("error opening file!");
-        let eu_countries: Vec<String> = serde_json::from_reader(eu_json_file).expect("error parsing JSON!");
-        let country_flag_json_file = fs::File::open(self.countries_flags_file_path.as_ref().unwrap()).expect("error opening file");
-        let countries_flags: HashMap<String,CountryFlag> = serde_json::from_reader(country_flag_json_file).expect("error parsing JSON!");
-        let country_currency_json_file = fs::File::open(self.countries_currencies_file_path.as_ref().unwrap()).expect("error opening file");
-        let countries_currencies: HashMap<String,CountryCurrency> = serde_json::from_reader(country_currency_json_file).expect("error parsing JSON!");
-        let continent_json_file = fs::File::open(self.continent_file_path.as_ref().unwrap()).expect("error opening file");
-        let continents: HashMap<String,Continent> = serde_json::from_reader(continent_json_file).expect("error parsing JSON!");
+        let country_json_file = ASSETS_DIR.get_file(self.country_file_path.as_ref().unwrap()).expect("error opening file");
+        let countries: HashMap<String,String> = serde_json::from_str(country_json_file.contents_utf8().unwrap()).expect("error parsing JSON!");
+        let eu_json_file = ASSETS_DIR.get_file(self.eu_file_path.as_ref().unwrap()).expect("error opening file!");
+        let eu_countries: Vec<String> = serde_json::from_str(eu_json_file.contents_utf8().unwrap()).expect("error parsing JSON!");
+        let country_flag_json_file = ASSETS_DIR.get_file(self.countries_flags_file_path.as_ref().unwrap()).expect("error opening file");
+        let countries_flags: HashMap<String,CountryFlag> = serde_json::from_str(country_flag_json_file.contents_utf8().unwrap()).expect("error parsing JSON!");
+        let country_currency_json_file = ASSETS_DIR.get_file(self.countries_currencies_file_path.as_ref().unwrap()).expect("error opening file");
+        let countries_currencies: HashMap<String,CountryCurrency> = serde_json::from_str(country_currency_json_file.contents_utf8().unwrap()).expect("error parsing JSON!");
+        let continent_json_file = ASSETS_DIR.get_file(self.continent_file_path.as_ref().unwrap()).expect("error opening file");
+        let continents: HashMap<String,Continent> = serde_json::from_str(continent_json_file.contents_utf8().unwrap()).expect("error parsing JSON!");
         // Check for cache hits
         ips.iter()
             .for_each(|x| match self.cache.get(&x.to_string()) {
