@@ -68,11 +68,11 @@ It is possible to return the country name in other languages, change the EU coun
 
 The files must be `.json` files with structures matching the following:
 
-- [countries.json](./src/countries.json)
-- [eu.json](./src/eu.json)
-- [flags.json](./src/flags.json)
-- [currency.json](./src/currency.json)
-- [continent.json](./src/continent.json)
+- [countries.json](./assets/countries.json)
+- [eu.json](./assets/eu.json)
+- [flags.json](./assets/flags.json)
+- [currency.json](./assets/currency.json)
+- [continent.json](./assets/continent.json)
 
 ```rust
 let config = IpInfoConfig {
