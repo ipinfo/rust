@@ -68,7 +68,7 @@ It is possible to return the country name in other languages, change the EU coun
 
 The files must be `.json` files with structures matching the following:
 
-- [countiries.json](./src/countries.json)
+- [countries.json](./src/countries.json)
 - [eu.json](./src/eu.json)
 - [flags.json](./src/flags.json)
 - [currency.json](./src/currency.json)
