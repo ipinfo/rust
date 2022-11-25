@@ -64,19 +64,19 @@ println!("{}: {:?}", "8.8.8.8", r["8.8.8.8"].country_currency) // Some(CountryCu
 println!("{}: {:?}", "8.8.8.8", r["8.8.8.8"].continent) // Some(Continent { code: "NA", name: "North America" })
 ```
 
-It is possible to return the country name in other languages, change the EU countries and change the flag emoji or unicode by setting the paths of `country_file_path`, `eu_file_path`, `countries_flags_file_path`, `countries_currencies_file_path` and `continent_file_path` when creating the `IPinfo` client.
+It is possible to return the country name in other languages, change the EU countries and change the flag emoji or unicode by setting the paths of `countries_file_path`, `eu_file_path`, `country_flags_file_path`, `country_currencies_file_path` and `continents_file_path` when creating the `IPinfo` client.
 
 The files must be `.json` files with structures matching the following:
 
 - [countries.json](./assets/countries.json)
 - [eu.json](./assets/eu.json)
 - [flags.json](./assets/flags.json)
-- [currency.json](./assets/currency.json)
-- [continent.json](./assets/continent.json)
+- [currencies.json](./assets/currencies.json)
+- [continents.json](./assets/continents.json)
 
 ```rust
 let config = IpInfoConfig {
-    country_file_path: Some("custom.json".to_string()),
+    countries_file_path: Some("custom.json".to_string()),
     eu_file_path: Some("custom_eu.json".to_string()),
     ..Default::default()
 };

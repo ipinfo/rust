@@ -38,19 +38,19 @@ pub struct IpInfoConfig {
     pub cache_size: usize,
 
     /// The file path of `countries.json`
-    pub country_file_path: Option<String>,
+    pub countries_file_path: Option<String>,
 
     /// The file path of `eu.json`
     pub eu_file_path: Option<String>,
 
     /// The file path of `flags.json`
-    pub countries_flags_file_path: Option<String>,
+    pub country_flags_file_path: Option<String>,
 
-    /// The file path of `currency.json`
-    pub countries_currencies_file_path: Option<String>,
+    /// The file path of `currencies.json`
+    pub country_currencies_file_path: Option<String>,
 
-    /// The file path of `continent.json`
-    pub continent_file_path: Option<String>
+    /// The file path of `continents.json`
+    pub continents_file_path: Option<String>
 }
 
 impl Default for IpInfoConfig {
@@ -59,11 +59,11 @@ impl Default for IpInfoConfig {
             token: None,
             timeout: Duration::from_secs(3),
             cache_size: 100,
-            country_file_path: None,
+            countries_file_path: None,
             eu_file_path: None,
-            countries_flags_file_path: None,
-            countries_currencies_file_path: None,
-            continent_file_path: None 
+            country_flags_file_path: None,
+            country_currencies_file_path: None,
+            continents_file_path: None 
         }
     }
 }
@@ -74,11 +74,11 @@ pub struct IpInfo {
     token: Option<String>,
     client: reqwest::Client,
     cache: LruCache<String, IpDetails>,
-    country: HashMap<String,String>,
+    countries: HashMap<String,String>,
     eu: Vec<String>,
     countries_flags: HashMap<String,CountryFlag>,
     countries_currencies: HashMap<String,CountryCurrency>,
-    continent: HashMap<String,Continent>
+    continents: HashMap<String,Continent>
 }
 
 impl IpInfo {
@@ -102,19 +102,19 @@ impl IpInfo {
             client,
             token: config.token,
             cache: LruCache::new(config.cache_size),
-            country: HashMap::new(),
+            countries: HashMap::new(),
             eu: Vec::new(),
             countries_flags: HashMap::new(),
             countries_currencies: HashMap::new(),
-            continent: HashMap::new(),
+            continents: HashMap::new(),
         };
 
-        if config.country_file_path.is_none() {
+        if config.countries_file_path.is_none() {
             let tcf = ASSETS_DIR.get_file("countries.json").expect("error opening file");
-            ipinfo_obj.country =  serde_json::from_str(tcf.contents_utf8().unwrap()).expect("error parsing JSON!");
+            ipinfo_obj.countries =  serde_json::from_str(tcf.contents_utf8().unwrap()).expect("error parsing JSON!");
         } else {
-            let tcf = fs::File::open(config.country_file_path.as_ref().unwrap()).expect("error opening file");
-            ipinfo_obj.country = serde_json::from_reader(tcf).expect("error parsing JSON!");
+            let tcf = fs::File::open(config.countries_file_path.as_ref().unwrap()).expect("error opening file");
+            ipinfo_obj.countries = serde_json::from_reader(tcf).expect("error parsing JSON!");
         }
 
         if config.eu_file_path.is_none() {
@@ -125,28 +125,28 @@ impl IpInfo {
             ipinfo_obj.eu = serde_json::from_reader(tcf).expect("error parsing JSON!");
         }
 
-        if config.countries_flags_file_path.is_none() {
+        if config.country_flags_file_path.is_none() {
             let tcf = ASSETS_DIR.get_file("flags.json").expect("error opening file");
             ipinfo_obj.countries_flags =  serde_json::from_str(tcf.contents_utf8().unwrap()).expect("error parsing JSON!");
         } else {
-            let tcf = fs::File::open(config.countries_flags_file_path.as_ref().unwrap()).expect("error opening file");
+            let tcf = fs::File::open(config.country_flags_file_path.as_ref().unwrap()).expect("error opening file");
             ipinfo_obj.countries_flags = serde_json::from_reader(tcf).expect("error parsing JSON!");
         }
 
-        if config.countries_currencies_file_path.is_none() {
-            let tcf = ASSETS_DIR.get_file("currency.json").expect("error opening file");
+        if config.country_currencies_file_path.is_none() {
+            let tcf = ASSETS_DIR.get_file("currencies.json").expect("error opening file");
             ipinfo_obj.countries_currencies =  serde_json::from_str(tcf.contents_utf8().unwrap()).expect("error parsing JSON!");
         } else {
-            let tcf = fs::File::open(config.countries_currencies_file_path.as_ref().unwrap()).expect("error opening file");
+            let tcf = fs::File::open(config.country_currencies_file_path.as_ref().unwrap()).expect("error opening file");
             ipinfo_obj.countries_currencies = serde_json::from_reader(tcf).expect("error parsing JSON!");
         }
 
-        if config.continent_file_path.is_none() {
-            let tcf = ASSETS_DIR.get_file("continent.json").expect("error opening file");
-            ipinfo_obj.continent =  serde_json::from_str(tcf.contents_utf8().unwrap()).expect("error parsing JSON!");
+        if config.continents_file_path.is_none() {
+            let tcf = ASSETS_DIR.get_file("continents.json").expect("error opening file");
+            ipinfo_obj.continents =  serde_json::from_str(tcf.contents_utf8().unwrap()).expect("error parsing JSON!");
         } else {
-            let tcf = fs::File::open(config.continent_file_path.as_ref().unwrap()).expect("error opening file");
-            ipinfo_obj.continent = serde_json::from_reader(tcf).expect("error parsing JSON!");
+            let tcf = fs::File::open(config.continents_file_path.as_ref().unwrap()).expect("error opening file");
+            ipinfo_obj.continents = serde_json::from_reader(tcf).expect("error parsing JSON!");
         }
 
         Ok(ipinfo_obj)
@@ -210,14 +210,14 @@ impl IpInfo {
             let mut_details = details.get_mut(&detail.0).unwrap();
             let country = &mut_details.country;
             if !country.is_empty() {
-                let country_name = self.country.get(&mut_details.country).unwrap();
+                let country_name = self.countries.get(&mut_details.country).unwrap();
                 mut_details.country_name = Some(country_name.to_string());
                 mut_details.is_eu = Some(self.eu.contains(country));
                 let country_flag = self.countries_flags.get(&mut_details.country).unwrap();
                 mut_details.country_flag = Some(country_flag.to_owned());
                 let country_currency = self.countries_currencies.get(&mut_details.country).unwrap();
                 mut_details.country_currency = Some(country_currency.to_owned());
-                let continent = self.continent.get(&mut_details.country).unwrap();
+                let continent = self.continents.get(&mut_details.country).unwrap();
                 mut_details.continent = Some(continent.to_owned());
             }
         }
