@@ -76,8 +76,8 @@ pub struct IpInfo {
     cache: LruCache<String, IpDetails>,
     countries: HashMap<String,String>,
     eu: Vec<String>,
-    countries_flags: HashMap<String,CountryFlag>,
-    countries_currencies: HashMap<String,CountryCurrency>,
+    country_flags: HashMap<String,CountryFlag>,
+    country_currencies: HashMap<String,CountryCurrency>,
     continents: HashMap<String,Continent>
 }
 
@@ -104,8 +104,8 @@ impl IpInfo {
             cache: LruCache::new(config.cache_size),
             countries: HashMap::new(),
             eu: Vec::new(),
-            countries_flags: HashMap::new(),
-            countries_currencies: HashMap::new(),
+            country_flags: HashMap::new(),
+            country_currencies: HashMap::new(),
             continents: HashMap::new(),
         };
 
@@ -127,18 +127,18 @@ impl IpInfo {
 
         if config.country_flags_file_path.is_none() {
             let t_file = ASSETS_DIR.get_file("flags.json").expect("error opening file");
-            ipinfo_obj.countries_flags =  serde_json::from_str(t_file.contents_utf8().unwrap()).expect("error parsing JSON!");
+            ipinfo_obj.country_flags =  serde_json::from_str(t_file.contents_utf8().unwrap()).expect("error parsing JSON!");
         } else {
             let t_file = fs::File::open(config.country_flags_file_path.as_ref().unwrap()).expect("error opening file");
-            ipinfo_obj.countries_flags = serde_json::from_reader(t_file).expect("error parsing JSON!");
+            ipinfo_obj.country_flags = serde_json::from_reader(t_file).expect("error parsing JSON!");
         }
 
         if config.country_currencies_file_path.is_none() {
             let t_file = ASSETS_DIR.get_file("currencies.json").expect("error opening file");
-            ipinfo_obj.countries_currencies =  serde_json::from_str(t_file.contents_utf8().unwrap()).expect("error parsing JSON!");
+            ipinfo_obj.country_currencies =  serde_json::from_str(t_file.contents_utf8().unwrap()).expect("error parsing JSON!");
         } else {
             let t_file = fs::File::open(config.country_currencies_file_path.as_ref().unwrap()).expect("error opening file");
-            ipinfo_obj.countries_currencies = serde_json::from_reader(t_file).expect("error parsing JSON!");
+            ipinfo_obj.country_currencies = serde_json::from_reader(t_file).expect("error parsing JSON!");
         }
 
         if config.continents_file_path.is_none() {
@@ -213,9 +213,9 @@ impl IpInfo {
                 let country_name = self.countries.get(&mut_details.country).unwrap();
                 mut_details.country_name = Some(country_name.to_string());
                 mut_details.is_eu = Some(self.eu.contains(country));
-                let country_flag = self.countries_flags.get(&mut_details.country).unwrap();
+                let country_flag = self.country_flags.get(&mut_details.country).unwrap();
                 mut_details.country_flag = Some(country_flag.to_owned());
-                let country_currency = self.countries_currencies.get(&mut_details.country).unwrap();
+                let country_currency = self.country_currencies.get(&mut_details.country).unwrap();
                 mut_details.country_currency = Some(country_currency.to_owned());
                 let continent = self.continents.get(&mut_details.country).unwrap();
                 mut_details.continent = Some(continent.to_owned());
