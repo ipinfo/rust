@@ -2,7 +2,7 @@
 name = "ipinfo"
 description = "ipinfo: A Rust library for IPInfo"
 version = "0.5.0"
-authors = ["Amr Ali <amralicc@gmail.com>", "Uman Shahzad <uman@mslm.io>", "Umar Farooq <umar@ipinfo.io>"]
+authors = ["Amr Ali <amralicc@gmail.com>", "Uman Shahzad <uman@mslm.io>", "Umar Farooq <umar@ipinfo.io>", "Fayzan Ahmad <fayzanx@gmail.com>"]
 edition = "2018"
 license = "Apache-2.0"
 homepage = "https://github.com/ipinfo/rust/"
