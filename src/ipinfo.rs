@@ -134,7 +134,7 @@ impl IpInfo {
         }
 
         if config.country_currencies_file_path.is_none() {
-            let t_file = ASSETS_DIR.get_file("currencies.json").expect("error opening file");
+            let t_file = ASSETS_DIR.get_file("currency.json").expect("error opening file");
             ipinfo_obj.country_currencies =  serde_json::from_str(t_file.contents_utf8().unwrap()).expect("error parsing JSON!");
         } else {
             let t_file = fs::File::open(config.country_currencies_file_path.as_ref().unwrap()).expect("error opening file");
@@ -142,7 +142,7 @@ impl IpInfo {
         }
 
         if config.continents_file_path.is_none() {
-            let t_file = ASSETS_DIR.get_file("continents.json").expect("error opening file");
+            let t_file = ASSETS_DIR.get_file("continent.json").expect("error opening file");
             ipinfo_obj.continents =  serde_json::from_str(t_file.contents_utf8().unwrap()).expect("error parsing JSON!");
         } else {
             let t_file = fs::File::open(config.continents_file_path.as_ref().unwrap()).expect("error opening file");

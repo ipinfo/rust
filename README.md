@@ -71,8 +71,8 @@ The files must be `.json` files with structures matching the following:
 - [countries.json](./assets/countries.json)
 - [eu.json](./assets/eu.json)
 - [flags.json](./assets/flags.json)
-- [currencies.json](./assets/currencies.json)
-- [continents.json](./assets/continents.json)
+- [currency.json](./assets/currency.json)
+- [continent.json](./assets/continent.json)
 
 ```rust
 let config = IpInfoConfig {
