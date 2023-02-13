@@ -224,6 +224,52 @@ impl IpInfo {
         Ok(details)
     }
 
+    /// looks up IPDetails for a single IP Address
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use ipinfo::IpInfo;
+    ///
+    /// let mut ipinfo = IpInfo::new(Default::default()).expect("should construct");
+    /// let res = ipinfo.lookup("8.8.8.8".to_string()).expect("should run");
+    /// ```
+    pub fn lookup_single(
+        &mut self,
+        ip: &str,
+    ) -> Result<IpDetails, IpError> {
+
+        // lookup in case of a cache miss
+        let response = self
+            .client
+            .get(&format!("{}/{}", self.url, ip))
+            .headers(Self::construct_headers())
+            .bearer_auth(&self.token.as_ref().unwrap_or(&"".to_string()))
+            .send()?;
+
+        // Check if we exhausted our request quota
+        if let reqwest::StatusCode::TOO_MANY_REQUESTS = response.status() {
+            return Err(err!(RateLimitExceededError));
+        }
+
+        // Acquire response
+        let raw_resp = response.error_for_status()?.text()?;
+
+        // Parse the response
+        let resp: serde_json::Value = serde_json::from_str(&raw_resp)?;
+
+        // Return if an error occurred
+        if let Some(e) = resp["error"].as_str() {
+            return Err(err!(IpRequestError, e));
+        }
+
+        // Parse the results and add additional country details
+        let mut details: IpDetails = serde_json::from_str(&raw_resp)?;
+        self.populate_static_details(&mut details);
+
+        Ok(details)
+    }
+
     // Add country details and EU status to response
     fn populate_static_details(&self, details: &mut IpDetails) {
         if !&details.country.is_empty() {
