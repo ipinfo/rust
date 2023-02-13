@@ -239,6 +239,13 @@ impl IpInfo {
         ip: &str,
     ) -> Result<IpDetails, IpError> {
 
+        // Check for cache hit
+        let cached_detail = self.cache.get(&ip.to_string());
+
+        if !cached_detail.is_none() {
+            return Ok(cached_detail.unwrap().clone());
+        }
+
         // lookup in case of a cache miss
         let response = self
             .client
@@ -266,6 +273,9 @@ impl IpInfo {
         // Parse the results and add additional country details
         let mut details: IpDetails = serde_json::from_str(&raw_resp)?;
         self.populate_static_details(&mut details);
+
+        // update cache
+        self.cache.put(ip.to_string(), details.clone());
 
         Ok(details)
     }
