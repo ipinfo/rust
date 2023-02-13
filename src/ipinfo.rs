@@ -207,19 +207,8 @@ impl IpInfo {
 
         // Add country_name and EU status to response
         for detail in details.to_owned() {
-            let mut_details = details.get_mut(&detail.0).unwrap();
-            let country = &mut_details.country;
-            if !country.is_empty() {
-                let country_name = self.countries.get(&mut_details.country).unwrap();
-                mut_details.country_name = Some(country_name.to_string());
-                mut_details.is_eu = Some(self.eu.contains(country));
-                let country_flag = self.country_flags.get(&mut_details.country).unwrap();
-                mut_details.country_flag = Some(country_flag.to_owned());
-                let country_currency = self.country_currencies.get(&mut_details.country).unwrap();
-                mut_details.country_currency = Some(country_currency.to_owned());
-                let continent = self.continents.get(&mut_details.country).unwrap();
-                mut_details.continent = Some(continent.to_owned());
-            }
+            let mut mut_details = details.get_mut(&detail.0).unwrap();
+            self.populate_static_details(&mut mut_details);
         }
 
         // Update cache
@@ -233,6 +222,21 @@ impl IpInfo {
         });
 
         Ok(details)
+    }
+
+    // Add country details and EU status to response
+    fn populate_static_details(&self, details: &mut IpDetails) {
+        if !&details.country.is_empty() {
+            let country_name = self.countries.get(&details.country).unwrap();
+            details.country_name = Some(country_name.to_string());
+            details.is_eu = Some(self.eu.contains(&details.country));
+            let country_flag = self.country_flags.get(&details.country).unwrap();
+            details.country_flag = Some(country_flag.to_owned());
+            let country_currency = self.country_currencies.get(&details.country).unwrap();
+            details.country_currency = Some(country_currency.to_owned());
+            let continent = self.continents.get(&details.country).unwrap();
+            details.continent = Some(continent.to_owned());
+        }
     }
 
     /// Construct API request headers.
