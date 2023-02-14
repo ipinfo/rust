@@ -238,7 +238,6 @@ impl IpInfo {
         &mut self,
         ip: &str,
     ) -> Result<IpDetails, IpError> {
-
         // Check for cache hit
         let cached_detail = self.cache.get(&ip.to_string());
 
@@ -352,17 +351,16 @@ mod tests {
     fn request_single_ip() {
         let mut ipinfo = get_ipinfo_client();
 
-        let details = ipinfo.lookup_batch(&["66.87.125.72"]).expect("should lookup");
+        let details = ipinfo.lookup("66.87.125.72").expect("should lookup");
 
-        assert!(details.contains_key("66.87.125.72"));
-        assert_eq!(details.len(), 1);
+        assert_eq!(details.ip, "66.87.125.72");
     }
 
     #[test]
-    fn request_single_ip_no_token() {
+    fn request_no_token() {
         let mut ipinfo =
             IpInfo::new(Default::default()).expect("should construct");
-
+        
         assert_eq!(
             ipinfo.lookup_batch(&["8.8.8.8"]).err().unwrap().kind(),
             IpErrorKind::IpRequestError
