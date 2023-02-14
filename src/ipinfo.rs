@@ -232,7 +232,7 @@ impl IpInfo {
     /// use ipinfo::IpInfo;
     ///
     /// let mut ipinfo = IpInfo::new(Default::default()).expect("should construct");
-    /// let res = ipinfo.lookup("8.8.8.8".to_string()).expect("should run");
+    /// let res = ipinfo.lookup("8.8.8.8").expect("should run");
     /// ```
     pub fn lookup(
         &mut self,

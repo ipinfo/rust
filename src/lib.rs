@@ -38,10 +38,10 @@
 //!
 //!   // Setup IpInfo structure and start looking up IP addresses.
 //!   let mut ipinfo = IpInfo::new(config).expect("should construct");
-//!   let res = ipinfo.lookup(&["8.8.8.8", "4.2.2.4"]);
+//!   let res = ipinfo.lookup("8.8.8.8");
 //!
 //!   match res {
-//!     Ok(r) => println!("{}: {}", "8.8.8.8", r["8.8.8.8"].hostname.as_ref().unwrap()),
+//!     Ok(r) => println!("{}: {}", "8.8.8.8", r.hostname.as_ref().unwrap()),
 //!     Err(e) => println!("error occurred: {}", &e.to_string()),
 //!   }
 //! }
