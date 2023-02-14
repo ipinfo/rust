@@ -160,9 +160,9 @@ impl IpInfo {
     /// use ipinfo::IpInfo;
     ///
     /// let mut ipinfo = IpInfo::new(Default::default()).expect("should construct");
-    /// let res = ipinfo.lookup(&["8.8.8.8"]).expect("should run");
+    /// let res = ipinfo.lookup_batch(&["8.8.8.8"]).expect("should run");
     /// ```
-    pub fn lookup(
+    pub fn lookup_batch(
         &mut self,
         ips: &[&str],
     ) -> Result<HashMap<String, IpDetails>, IpError> {
@@ -207,19 +207,8 @@ impl IpInfo {
 
         // Add country_name and EU status to response
         for detail in details.to_owned() {
-            let mut_details = details.get_mut(&detail.0).unwrap();
-            let country = &mut_details.country;
-            if !country.is_empty() {
-                let country_name = self.countries.get(&mut_details.country).unwrap();
-                mut_details.country_name = Some(country_name.to_string());
-                mut_details.is_eu = Some(self.eu.contains(country));
-                let country_flag = self.country_flags.get(&mut_details.country).unwrap();
-                mut_details.country_flag = Some(country_flag.to_owned());
-                let country_currency = self.country_currencies.get(&mut_details.country).unwrap();
-                mut_details.country_currency = Some(country_currency.to_owned());
-                let continent = self.continents.get(&mut_details.country).unwrap();
-                mut_details.continent = Some(continent.to_owned());
-            }
+            let mut mut_details = details.get_mut(&detail.0).unwrap();
+            self.populate_static_details(&mut mut_details);
         }
 
         // Update cache
@@ -233,6 +222,76 @@ impl IpInfo {
         });
 
         Ok(details)
+    }
+
+    /// looks up IPDetails for a single IP Address
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use ipinfo::IpInfo;
+    ///
+    /// let mut ipinfo = IpInfo::new(Default::default()).expect("should construct");
+    /// let res = ipinfo.lookup("8.8.8.8").expect("should run");
+    /// ```
+    pub fn lookup(
+        &mut self,
+        ip: &str,
+    ) -> Result<IpDetails, IpError> {
+        // Check for cache hit
+        let cached_detail = self.cache.get(&ip.to_string());
+
+        if !cached_detail.is_none() {
+            return Ok(cached_detail.unwrap().clone());
+        }
+
+        // lookup in case of a cache miss
+        let response = self
+            .client
+            .get(&format!("{}/{}", self.url, ip))
+            .headers(Self::construct_headers())
+            .bearer_auth(&self.token.as_ref().unwrap_or(&"".to_string()))
+            .send()?;
+
+        // Check if we exhausted our request quota
+        if let reqwest::StatusCode::TOO_MANY_REQUESTS = response.status() {
+            return Err(err!(RateLimitExceededError));
+        }
+
+        // Acquire response
+        let raw_resp = response.error_for_status()?.text()?;
+
+        // Parse the response
+        let resp: serde_json::Value = serde_json::from_str(&raw_resp)?;
+
+        // Return if an error occurred
+        if let Some(e) = resp["error"].as_str() {
+            return Err(err!(IpRequestError, e));
+        }
+
+        // Parse the results and add additional country details
+        let mut details: IpDetails = serde_json::from_str(&raw_resp)?;
+        self.populate_static_details(&mut details);
+
+        // update cache
+        self.cache.put(ip.to_string(), details.clone());
+
+        Ok(details)
+    }
+
+    // Add country details and EU status to response
+    fn populate_static_details(&self, details: &mut IpDetails) {
+        if !&details.country.is_empty() {
+            let country_name = self.countries.get(&details.country).unwrap();
+            details.country_name = Some(country_name.to_string());
+            details.is_eu = Some(self.eu.contains(&details.country));
+            let country_flag = self.country_flags.get(&details.country).unwrap();
+            details.country_flag = Some(country_flag.to_owned());
+            let country_currency = self.country_currencies.get(&details.country).unwrap();
+            details.country_currency = Some(country_currency.to_owned());
+            let continent = self.continents.get(&details.country).unwrap();
+            details.continent = Some(continent.to_owned());
+        }
     }
 
     /// Construct API request headers.
@@ -292,19 +351,18 @@ mod tests {
     fn request_single_ip() {
         let mut ipinfo = get_ipinfo_client();
 
-        let details = ipinfo.lookup(&["66.87.125.72"]).expect("should lookup");
+        let details = ipinfo.lookup("66.87.125.72").expect("should lookup");
 
-        assert!(details.contains_key("66.87.125.72"));
-        assert_eq!(details.len(), 1);
+        assert_eq!(details.ip, "66.87.125.72");
     }
 
     #[test]
-    fn request_single_ip_no_token() {
+    fn request_no_token() {
         let mut ipinfo =
             IpInfo::new(Default::default()).expect("should construct");
-
+        
         assert_eq!(
-            ipinfo.lookup(&["8.8.8.8"]).err().unwrap().kind(),
+            ipinfo.lookup_batch(&["8.8.8.8"]).err().unwrap().kind(),
             IpErrorKind::IpRequestError
         );
     }
@@ -314,7 +372,7 @@ mod tests {
         let mut ipinfo = get_ipinfo_client();
 
         let details = ipinfo
-            .lookup(&["8.8.8.8", "4.2.2.4"])
+            .lookup_batch(&["8.8.8.8", "4.2.2.4"])
             .expect("should lookup");
 
         // Assert successful lookup
@@ -352,7 +410,7 @@ mod tests {
         let mut ipinfo = get_ipinfo_client();
 
         // Populate the cache with 8.8.8.8
-        let details = ipinfo.lookup(&["8.8.8.8"]).expect("should lookup");
+        let details = ipinfo.lookup_batch(&["8.8.8.8"]).expect("should lookup");
 
         // Assert 1 result
         assert!(details.contains_key("8.8.8.8"));
@@ -360,7 +418,7 @@ mod tests {
 
         // Should have a cache hit for 8.8.8.8 and query for 4.2.2.4
         let details = ipinfo
-            .lookup(&["4.2.2.4", "8.8.8.8"])
+            .lookup_batch(&["4.2.2.4", "8.8.8.8"])
             .expect("should lookup");
 
         // Assert 2 results
