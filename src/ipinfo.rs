@@ -160,9 +160,9 @@ impl IpInfo {
     /// use ipinfo::IpInfo;
     ///
     /// let mut ipinfo = IpInfo::new(Default::default()).expect("should construct");
-    /// let res = ipinfo.lookup(&["8.8.8.8"]).expect("should run");
+    /// let res = ipinfo.lookup_batch(&["8.8.8.8"]).expect("should run");
     /// ```
-    pub fn lookup(
+    pub fn lookup_batch(
         &mut self,
         ips: &[&str],
     ) -> Result<HashMap<String, IpDetails>, IpError> {
@@ -234,7 +234,7 @@ impl IpInfo {
     /// let mut ipinfo = IpInfo::new(Default::default()).expect("should construct");
     /// let res = ipinfo.lookup("8.8.8.8".to_string()).expect("should run");
     /// ```
-    pub fn lookup_single(
+    pub fn lookup(
         &mut self,
         ip: &str,
     ) -> Result<IpDetails, IpError> {
@@ -352,7 +352,7 @@ mod tests {
     fn request_single_ip() {
         let mut ipinfo = get_ipinfo_client();
 
-        let details = ipinfo.lookup(&["66.87.125.72"]).expect("should lookup");
+        let details = ipinfo.lookup_batch(&["66.87.125.72"]).expect("should lookup");
 
         assert!(details.contains_key("66.87.125.72"));
         assert_eq!(details.len(), 1);
@@ -364,7 +364,7 @@ mod tests {
             IpInfo::new(Default::default()).expect("should construct");
 
         assert_eq!(
-            ipinfo.lookup(&["8.8.8.8"]).err().unwrap().kind(),
+            ipinfo.lookup_batch(&["8.8.8.8"]).err().unwrap().kind(),
             IpErrorKind::IpRequestError
         );
     }
@@ -374,7 +374,7 @@ mod tests {
         let mut ipinfo = get_ipinfo_client();
 
         let details = ipinfo
-            .lookup(&["8.8.8.8", "4.2.2.4"])
+            .lookup_batch(&["8.8.8.8", "4.2.2.4"])
             .expect("should lookup");
 
         // Assert successful lookup
@@ -412,7 +412,7 @@ mod tests {
         let mut ipinfo = get_ipinfo_client();
 
         // Populate the cache with 8.8.8.8
-        let details = ipinfo.lookup(&["8.8.8.8"]).expect("should lookup");
+        let details = ipinfo.lookup_batch(&["8.8.8.8"]).expect("should lookup");
 
         // Assert 1 result
         assert!(details.contains_key("8.8.8.8"));
@@ -420,7 +420,7 @@ mod tests {
 
         // Should have a cache hit for 8.8.8.8 and query for 4.2.2.4
         let details = ipinfo
-            .lookup(&["4.2.2.4", "8.8.8.8"])
+            .lookup_batch(&["4.2.2.4", "8.8.8.8"])
             .expect("should lookup");
 
         // Assert 2 results

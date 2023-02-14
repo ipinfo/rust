@@ -36,9 +36,17 @@ use ipinfo::{IpInfo, IpInfoConfig};
 fn main() {
   let config = IpInfoConfig { token: Some("my token".to_string()), ..Default::default() };
   let mut ipinfo = IpInfo::new(config).expect("should construct");
-  let res = ipinfo.lookup(&["8.8.8.8", "4.2.2.4"]);
 
+  // ability to lookup details for single ip
+  let res = ipinfo.lookup("8.8.8.8");
   match res {
+    ok(r) => println!("{}: {:?}", "8.8.8.8", r.hostname),
+    Err(e) => println!("error occurred: {}", &e.to_string()),
+  }
+
+  // or batch ips to lookup at once
+  let res_batch = ipinfo.lookup_batch(&["8.8.8.8", "4.2.2.4"]);
+  match res_batch {
     Ok(r) => println!("{}: {:?}", "8.8.8.8", r["8.8.8.8"].hostname),
     Err(e) => println!("error occurred: {}", &e.to_string()),
   }
@@ -57,11 +65,12 @@ When looking up an IP address, the `response` includes `country_name` which is t
 which includes code and symbol of a country's currency and `continent` which includes code and name of the continent. 
 
 ```rust 
-println!("{}: {}", "8.8.8.8", r["8.8.8.8"].country_name) // United States
-println!("{}: {:?}", "8.8.8.8", r["8.8.8.8"].is_eu) // Some(false)
-println!("{}: {:?}", "8.8.8.8", r["8.8.8.8"].country_flag) // Some(CountryFlag { emoji: "🇺🇸", unicode: "U+1F1FA U+1F1F8" })
-println!("{}: {:?}", "8.8.8.8", r["8.8.8.8"].country_currency) // Some(CountryCurrency { code: "USD", symbol: "$" })
-println!("{}: {:?}", "8.8.8.8", r["8.8.8.8"].continent) // Some(Continent { code: "NA", name: "North America" })
+let r = ipinfo.lookup("8.8.8.8");
+println!("{}: {}", "8.8.8.8", r.country_name) // United States
+println!("{}: {:?}", "8.8.8.8", r.is_eu) // Some(false)
+println!("{}: {:?}", "8.8.8.8", r.country_flag) // Some(CountryFlag { emoji: "🇺🇸", unicode: "U+1F1FA U+1F1F8" })
+println!("{}: {:?}", "8.8.8.8", r.country_currency) // Some(CountryCurrency { code: "USD", symbol: "$" })
+println!("{}: {:?}", "8.8.8.8", r.continent) // Some(Continent { code: "NA", name: "North America" })
 ```
 
 It is possible to return the country name in other languages, change the EU countries and change the flag emoji or unicode by setting the paths of `countries_file_path`, `eu_file_path`, `country_flags_file_path`, `country_currencies_file_path` and `continents_file_path` when creating the `IPinfo` client.
