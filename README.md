@@ -28,7 +28,7 @@ The free plan is limited to 50,000 requests per month, and doesn't include some 
 data fields such as the IP type and company information. To get the complete list of
 information on an IP address and make more requests per day see [https://ipinfo.io/pricing](https://ipinfo.io/pricing).
 
-## Example
+## Examples
 This library provides several ready to run examples located in the `/examples` directory. These can be run directly, replacing `<token>` with your access token
 
 ```bash
