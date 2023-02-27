@@ -29,27 +29,35 @@ data fields such as the IP type and company information. To get the complete lis
 information on an IP address and make more requests per day see [https://ipinfo.io/pricing](https://ipinfo.io/pricing).
 
 ## Example
+This library provides several ready to run examples located in the `/examples` directory. These can be run directly, replacing `<token>` with your access token
 
+```bash
+cargo run --example examples/lookup -- <token> 
+```
+```bash
+cargo run --example examples/lookup_batch -- <token> 
+```
+
+The `lookup` example above looks more or less like
 ```rust
 use ipinfo::{IpInfo, IpInfoConfig};
 
 fn main() {
-  let config = IpInfoConfig { token: Some("my token".to_string()), ..Default::default() };
-  let mut ipinfo = IpInfo::new(config).expect("should construct");
+    let config = IpInfoConfig {
+        token: Some("<token>".to_string()),
+        ..Default::default()
+    };
 
-  // ability to lookup details for single ip
-  let res = ipinfo.lookup("8.8.8.8");
-  match res {
-    ok(r) => println!("{}: {:?}", "8.8.8.8", r.hostname),
-    Err(e) => println!("error occurred: {}", &e.to_string()),
-  }
+    let mut ipinfo = IpInfo::new(config)
+        .expect("should construct");
 
-  // or batch ips to lookup at once
-  let res_batch = ipinfo.lookup_batch(&["8.8.8.8", "4.2.2.4"]);
-  match res_batch {
-    Ok(r) => println!("{}: {:?}", "8.8.8.8", r["8.8.8.8"].hostname),
-    Err(e) => println!("error occurred: {}", &e.to_string()),
-  }
+    let res = ipinfo.lookup("8.8.8.8");
+    match res {
+        Ok(r) => {
+            println!("{} lookup result: {:?}", "8.8.8.8", r);
+        },
+        Err(e) => println!("error occurred: {}", &e.to_string()),
+    }
 }
 ```
 
