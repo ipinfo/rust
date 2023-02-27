@@ -1,7 +1,11 @@
+use std::env;
 use ipinfo::{IpInfo, IpInfoConfig};
 
 fn main() {
+    let token = env::args().skip(1).next();
+
     let config = IpInfoConfig {
+        token,
         ..Default::default()
     };
 
