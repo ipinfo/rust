@@ -29,13 +29,13 @@ data fields such as the IP type and company information. To get the complete lis
 information on an IP address and make more requests per day see [https://ipinfo.io/pricing](https://ipinfo.io/pricing).
 
 ## Examples
-This library provides several ready to run examples located in the `/examples` directory. These can be run directly, replacing `<token>` with your access token
+There are several ready to run examples located in the `/examples` directory. These can be run directly, replacing `<token>` with your access token
 
 ```bash
-cargo run --example examples/lookup -- <token> 
+cargo run --example lookup -- <token>
 ```
 ```bash
-cargo run --example examples/lookup_batch -- <token> 
+cargo run --example lookup_batch -- <token>
 ```
 
 The `lookup` example above looks more or less like
