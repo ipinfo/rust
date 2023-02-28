@@ -152,7 +152,7 @@ impl IpInfo {
         Ok(ipinfo_obj)
     }
 
-    /// Lookup a list of one or more IP addresses.
+    /// Lookup IPDetails for a list of one or more IP addresses.
     ///
     /// # Examples
     ///
