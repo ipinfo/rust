@@ -162,7 +162,7 @@ impl IpInfo {
     /// let mut ipinfo = IpInfo::new(Default::default()).expect("should construct");
     /// let res = ipinfo.lookup_batch(&["8.8.8.8"]).expect("should run");
     /// ```
-    pub fn lookup_batch(
+    pub async fn lookup_batch(
         &mut self,
         ips: &[&str],
     ) -> Result<HashMap<String, IpDetails>, IpError> {
@@ -183,7 +183,8 @@ impl IpInfo {
             .headers(Self::construct_headers())
             .bearer_auth(&self.token.as_ref().unwrap_or(&"".to_string()))
             .json(&json!(misses))
-            .send()?;
+            .send()
+            .await?;
 
         // Check if we exhausted our request quota
         if let reqwest::StatusCode::TOO_MANY_REQUESTS = response.status() {
@@ -191,7 +192,7 @@ impl IpInfo {
         }
 
         // Acquire response
-        let raw_resp = response.error_for_status()?.text()?;
+        let raw_resp = response.error_for_status()?.text().await?;
 
         // Parse the response
         let resp: serde_json::Value = serde_json::from_str(&raw_resp)?;
@@ -234,7 +235,7 @@ impl IpInfo {
     /// let mut ipinfo = IpInfo::new(Default::default()).expect("should construct");
     /// let res = ipinfo.lookup("8.8.8.8").expect("should run");
     /// ```
-    pub fn lookup(
+    pub async fn lookup(
         &mut self,
         ip: &str,
     ) -> Result<IpDetails, IpError> {
@@ -251,7 +252,8 @@ impl IpInfo {
             .get(&format!("{}/{}", self.url, ip))
             .headers(Self::construct_headers())
             .bearer_auth(&self.token.as_ref().unwrap_or(&"".to_string()))
-            .send()?;
+            .send()
+            .await?;
 
         // Check if we exhausted our request quota
         if let reqwest::StatusCode::TOO_MANY_REQUESTS = response.status() {
@@ -259,7 +261,7 @@ impl IpInfo {
         }
 
         // Acquire response
-        let raw_resp = response.error_for_status()?.text()?;
+        let raw_resp = response.error_for_status()?.text().await?;
 
         // Parse the response
         let resp: serde_json::Value = serde_json::from_str(&raw_resp)?;
@@ -347,32 +349,33 @@ mod tests {
         assert_eq!(headers[ACCEPT], "application/json");
     }
 
-    #[test]
-    fn request_single_ip() {
+    #[tokio::test]
+    async fn request_single_ip() {
         let mut ipinfo = get_ipinfo_client();
 
-        let details = ipinfo.lookup("66.87.125.72").expect("should lookup");
+        let details = ipinfo.lookup("66.87.125.72").await.expect("should lookup");
 
         assert_eq!(details.ip, "66.87.125.72");
     }
 
-    #[test]
-    fn request_no_token() {
+    #[tokio::test]
+    async fn request_no_token() {
         let mut ipinfo =
             IpInfo::new(Default::default()).expect("should construct");
         
         assert_eq!(
-            ipinfo.lookup_batch(&["8.8.8.8"]).err().unwrap().kind(),
+            ipinfo.lookup_batch(&["8.8.8.8"]).await.err().unwrap().kind(),
             IpErrorKind::IpRequestError
         );
     }
 
-    #[test]
-    fn request_multiple_ip() {
+    #[tokio::test]
+    async fn request_multiple_ip() {
         let mut ipinfo = get_ipinfo_client();
 
         let details = ipinfo
             .lookup_batch(&["8.8.8.8", "4.2.2.4"])
+            .await
             .expect("should lookup");
 
         // Assert successful lookup
@@ -405,12 +408,12 @@ mod tests {
         assert_eq!(ip4.timezone, Some("America/Chicago".to_owned()));
     }
 
-    #[test]
-    fn request_cache_miss_and_hit() {
+    #[tokio::test]
+    async fn request_cache_miss_and_hit() {
         let mut ipinfo = get_ipinfo_client();
 
         // Populate the cache with 8.8.8.8
-        let details = ipinfo.lookup_batch(&["8.8.8.8"]).expect("should lookup");
+        let details = ipinfo.lookup_batch(&["8.8.8.8"]).await.expect("should lookup");
 
         // Assert 1 result
         assert!(details.contains_key("8.8.8.8"));
@@ -419,6 +422,7 @@ mod tests {
         // Should have a cache hit for 8.8.8.8 and query for 4.2.2.4
         let details = ipinfo
             .lookup_batch(&["4.2.2.4", "8.8.8.8"])
+            .await
             .expect("should lookup");
 
         // Assert 2 results
