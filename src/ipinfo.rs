@@ -158,9 +158,11 @@ impl IpInfo {
     ///
     /// ```no_run
     /// use ipinfo::IpInfo;
-    ///
-    /// let mut ipinfo = IpInfo::new(Default::default()).expect("should construct");
-    /// let res = ipinfo.lookup_batch(&["8.8.8.8"]).expect("should run");
+    /// #[tokio::main]
+    /// async fn main() {
+    ///     let mut ipinfo = IpInfo::new(Default::default()).expect("should construct");
+    ///     let res = ipinfo.lookup_batch(&["8.8.8.8"]).await.expect("should run");
+    /// }
     /// ```
     pub async fn lookup_batch(
         &mut self,
@@ -231,9 +233,12 @@ impl IpInfo {
     ///
     /// ```no_run
     /// use ipinfo::IpInfo;
-    ///
-    /// let mut ipinfo = IpInfo::new(Default::default()).expect("should construct");
-    /// let res = ipinfo.lookup("8.8.8.8").expect("should run");
+    /// 
+    ///  #[tokio::main]
+    /// async fn main() {
+    ///     let mut ipinfo = IpInfo::new(Default::default()).expect("should construct");
+    ///     let res = ipinfo.lookup("8.8.8.8").await.expect("should run");
+    /// }
     /// ```
     pub async fn lookup(
         &mut self,
