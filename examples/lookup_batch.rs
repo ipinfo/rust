@@ -1,7 +1,7 @@
 use std::env;
 use ipinfo::{IpInfo, IpInfoConfig};
-
-fn main() {
+#[tokio::main]
+async fn main() {
     let token = env::args().skip(1).next();
 
     let config = IpInfoConfig {
@@ -12,7 +12,7 @@ fn main() {
     let mut ipinfo = IpInfo::new(config)
         .expect("should construct");
 
-    let res2 = ipinfo.lookup_batch(&["8.8.8.8", "4.2.2.4"]);
+    let res2 = ipinfo.lookup_batch(&["8.8.8.8", "4.2.2.4"]).await;
     
     match res2 {
         Ok(r) => {
