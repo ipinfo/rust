@@ -16,7 +16,7 @@ To use IPinfo, add the followinig to your `Cargo.toml` file.
 
 ```toml
 [dependencies]
-ipinfo = "1.1.0"
+ipinfo = "2.0.0"
 ```
 
 ## Getting Started
@@ -41,8 +41,8 @@ cargo run --example lookup_batch -- <token>
 The `lookup` example above looks more or less like
 ```rust
 use ipinfo::{IpInfo, IpInfoConfig};
-
-fn main() {
+#[tokio::main]
+async fn main() {
     let config = IpInfoConfig {
         token: Some("<token>".to_string()),
         ..Default::default()
@@ -51,7 +51,7 @@ fn main() {
     let mut ipinfo = IpInfo::new(config)
         .expect("should construct");
 
-    let res = ipinfo.lookup("8.8.8.8");
+    let res = ipinfo.lookup("8.8.8.8").await;
     match res {
         Ok(r) => {
             println!("{} lookup result: {:?}", "8.8.8.8", r);
