@@ -12,13 +12,12 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-use std::{fs, collections::HashMap, time::Duration};
+use std::{fs, collections::HashMap, time::Duration, num::NonZeroUsize};
 
 use crate::{IpDetails, IpError, VERSION, CountryFlag, CountryCurrency, Continent};
 
 use lru::LruCache;
 use serde_json::json;
-use std::num::NonZeroUsize;
 
 use reqwest::header::{
     HeaderMap, HeaderValue, ACCEPT, CONTENT_TYPE, USER_AGENT,
