@@ -20,7 +20,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 /// IP address lookup details.
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Default, Deserialize, Serialize, Clone)]
 pub struct IpDetails {
     /// The IP address.
     pub ip: String,
@@ -81,6 +81,9 @@ pub struct IpDetails {
 
     /// The hosted domains details for the IP address.
     pub domains: Option<DomainsDetails>,
+
+    /// If the IP Address is Bogon
+    pub bogon: Option<bool>,
 
     #[serde(flatten)]
     pub extra: HashMap<String, Value>,

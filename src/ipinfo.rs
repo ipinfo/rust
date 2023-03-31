@@ -14,7 +14,15 @@
 
 use std::{fs, collections::HashMap, time::Duration, num::NonZeroUsize};
 
-use crate::{IpDetails, IpError, VERSION, CountryFlag, CountryCurrency, Continent};
+use crate::{
+    IpDetails,
+    IpError,
+    CountryFlag, 
+    CountryCurrency, 
+    Continent,
+    is_bogon,
+    VERSION,
+};
 
 use lru::LruCache;
 use serde_json::json;
@@ -244,6 +252,14 @@ impl IpInfo {
         &mut self,
         ip: &str,
     ) -> Result<IpDetails, IpError> {
+        if is_bogon(&ip.to_string()) {
+            return Ok(IpDetails {
+                ip: ip.to_string(),
+                bogon: Some(true),
+                ..Default::default() // fill remaining with default values
+            })
+        }
+
         // Check for cache hit
         let cached_detail = self.cache.get(&ip.to_string());
 

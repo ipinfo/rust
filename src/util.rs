@@ -62,7 +62,7 @@ const BOGON_NETWORKS : &[&str] = &[
 
 /// returns a boolean indicating whether an IP address is bogon
 /// supports both IPv4 and IPv6
-fn is_bogon(ip_address: &str) -> bool {
+pub fn is_bogon(ip_address: &str) -> bool {
     match ip_address.parse::<IpAddr>() {
         Ok(ip) => {
             BOGON_NETWORKS

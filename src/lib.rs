@@ -59,3 +59,4 @@ mod util;
 pub use crate::ipinfo::*;
 pub use api::*;
 pub use error::*;
+pub use util::*;
