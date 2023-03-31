@@ -18,6 +18,7 @@ use crate::{IpDetails, IpError, VERSION, CountryFlag, CountryCurrency, Continent
 
 use lru::LruCache;
 use serde_json::json;
+use std::num::NonZeroUsize;
 
 use reqwest::header::{
     HeaderMap, HeaderValue, ACCEPT, CONTENT_TYPE, USER_AGENT,
@@ -101,7 +102,7 @@ impl IpInfo {
             url,
             client,
             token: config.token,
-            cache: LruCache::new(config.cache_size),
+            cache: LruCache::new(NonZeroUsize::new(config.cache_size).unwrap()),
             countries: HashMap::new(),
             eu: Vec::new(),
             country_flags: HashMap::new(),
