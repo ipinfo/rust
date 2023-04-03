@@ -54,7 +54,9 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 mod error;
 mod api;
 mod ipinfo;
+mod util;
 
 pub use crate::ipinfo::*;
 pub use api::*;
 pub use error::*;
+pub use util::*;

@@ -12,9 +12,17 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-use std::{fs, collections::HashMap, time::Duration};
+use std::{fs, collections::HashMap, time::Duration, num::NonZeroUsize};
 
-use crate::{IpDetails, IpError, VERSION, CountryFlag, CountryCurrency, Continent};
+use crate::{
+    IpDetails,
+    IpError,
+    CountryFlag, 
+    CountryCurrency, 
+    Continent,
+    is_bogon,
+    VERSION,
+};
 
 use lru::LruCache;
 use serde_json::json;
@@ -101,7 +109,7 @@ impl IpInfo {
             url,
             client,
             token: config.token,
-            cache: LruCache::new(config.cache_size),
+            cache: LruCache::new(NonZeroUsize::new(config.cache_size).unwrap()),
             countries: HashMap::new(),
             eu: Vec::new(),
             country_flags: HashMap::new(),
@@ -170,6 +178,8 @@ impl IpInfo {
     ) -> Result<HashMap<String, IpDetails>, IpError> {
         let mut hits: Vec<IpDetails> = vec![];
         let mut misses: Vec<&str> = vec![];
+        let mut to_lookup: Vec<&str> = vec![];
+        let mut details_bogon = vec![];
 
         // Check for cache hits
         ips.iter()
@@ -178,13 +188,25 @@ impl IpInfo {
                 None => misses.push(*x),
             });
 
-        // Lookup cache misses
+        // check for bogon ip addresses
+        for ip_address in misses.iter() {
+            match is_bogon(ip_address) {
+                true => details_bogon.push(IpDetails {
+                    ip: ip_address.to_string(),
+                    bogon: Some(true),
+                    ..Default::default()
+                }),
+                false => to_lookup.push(ip_address)
+            }
+        }
+
+        // Lookup cache misses which are not bogon
         let response = self
             .client
             .post(&format!("{}/batch", self.url))
             .headers(Self::construct_headers())
             .bearer_auth(&self.token.as_ref().unwrap_or(&"".to_string()))
-            .json(&json!(misses))
+            .json(&json!(to_lookup))
             .send()
             .await?;
 
@@ -205,26 +227,31 @@ impl IpInfo {
         }
 
         // Parse the results
-        let mut details: HashMap<String, IpDetails> =
+        let mut results: HashMap<String, IpDetails> =
             serde_json::from_str(&raw_resp)?;
 
         // Add country_name and EU status to response
-        for detail in details.to_owned() {
-            let mut mut_details = details.get_mut(&detail.0).unwrap();
+        for detail in results.to_owned() {
+            let mut mut_details = results.get_mut(&detail.0).unwrap();
             self.populate_static_details(&mut mut_details);
         }
 
+        // Add Bogon IP Results
+        for result in details_bogon {
+            results.insert(result.ip.clone(), result);
+        }
+
         // Update cache
-        details.iter().for_each(|x| {
+        results.iter().for_each(|x| {
             self.cache.put(x.0.clone(), x.1.clone());
         });
 
         // Add cache hits to the result
         hits.iter().for_each(|x| {
-            details.insert(x.ip.clone(), x.clone());
+            results.insert(x.ip.clone(), x.clone());
         });
 
-        Ok(details)
+        Ok(results)
     }
 
     /// looks up IPDetails for a single IP Address
@@ -244,6 +271,14 @@ impl IpInfo {
         &mut self,
         ip: &str,
     ) -> Result<IpDetails, IpError> {
+        if is_bogon(&ip.to_string()) {
+            return Ok(IpDetails {
+                ip: ip.to_string(),
+                bogon: Some(true),
+                ..Default::default() // fill remaining with default values
+            })
+        }
+
         // Check for cache hit
         let cached_detail = self.cache.get(&ip.to_string());
 
@@ -434,5 +469,14 @@ mod tests {
         assert!(details.contains_key("8.8.8.8"));
         assert!(details.contains_key("4.2.2.4"));
         assert_eq!(details.len(), 2);
+    }
+
+    #[test]
+    fn test_is_bogon() {
+        assert_eq!(true, is_bogon("169.254.0.1"));
+        assert_eq!(true, is_bogon("192.0.2.1"));
+        assert_eq!(false, is_bogon("8.8.8.8"));
+        assert_eq!(true, is_bogon("2001:db8::1"));
+        assert_eq!(false, is_bogon("2606:4700:4700:1111::2"));
     }
 }
