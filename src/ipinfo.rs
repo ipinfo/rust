@@ -330,16 +330,20 @@ impl IpInfo {
     /// 
     ///  #[tokio::main]
     /// async fn main() {
-    ///     let map_url = IpInfo::get_map(&["8.8.8.8", "4.2.2.4"]).await.expect("should run");;
+    ///     let ipinfo = IpInfo::new(Default::default()).expect("should construct");
+    ///     let map_url = ipinfo.get_map(&["8.8.8.8", "4.2.2.4"]).await.expect("should run");
     /// }
     /// ```
-    pub async fn get_map(ips: &[&str]) -> Result<String, IpError> {
+    pub async fn get_map(
+        &self,
+        ips: &[&str],
+    ) -> Result<String, IpError> {
         if ips.len() > 500_000 {
             return Err(err!(MapLimitError));
         }
 
-        let map_url = "https://ipinfo.io/tools/map?cli=1";
-        let client = reqwest::Client::new();
+        let map_url = &format!("{}/tools/map?cli=1", self.url);
+        let client = self.client.clone();
         let json_ips = serde_json::json!(ips);
         
         let response = client
