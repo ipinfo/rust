@@ -321,6 +321,44 @@ impl IpInfo {
         Ok(details)
     }
 
+    /// Get a mapping of a list of IPs on a world map
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use ipinfo::IpInfo;
+    /// 
+    ///  #[tokio::main]
+    /// async fn main() {
+    ///     let ipinfo = IpInfo::new(Default::default()).expect("should construct");
+    ///     let map_url = ipinfo.get_map(&["8.8.8.8", "4.2.2.4"]).await.expect("should run");
+    /// }
+    /// ```
+    pub async fn get_map(
+        &self,
+        ips: &[&str],
+    ) -> Result<String, IpError> {
+        if ips.len() > 500_000 {
+            return Err(err!(MapLimitError));
+        }
+
+        let map_url = &format!("{}/tools/map?cli=1", self.url);
+        let client = self.client.clone();
+        let json_ips = serde_json::json!(ips);
+        
+        let response = client
+            .post(map_url)
+            .json(&json_ips)
+            .send().await?;
+        if !response.status().is_success() {
+            return Err(err!(HTTPClientError));
+        }
+
+        let response_json: serde_json::Value = response.json().await?;
+        let report_url = response_json["reportUrl"].as_str().ok_or("Report URL not found");
+        Ok(report_url.unwrap().to_string())
+    }
+
     // Add country details and EU status to response
     fn populate_static_details(&self, details: &mut IpDetails) {
         if !&details.country.is_empty() {

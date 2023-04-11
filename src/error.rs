@@ -52,6 +52,9 @@ pub enum IpErrorKind {
 
     /// Parse error.
     ParseError,
+
+    /// Map limit error.
+    MapLimitError,
 }
 
 impl IpErrorKind {
@@ -62,6 +65,7 @@ impl IpErrorKind {
             IpErrorKind::RateLimitExceededError => "rate limit exceeded",
             IpErrorKind::IpRequestError => "application error",
             IpErrorKind::ParseError => "parse error",
+            IpErrorKind::MapLimitError => "You have exceeded maximum IP upload limit per request.",
         }
     }
 }
