@@ -37,6 +37,9 @@ cargo run --example lookup -- <token>
 ```bash
 cargo run --example lookup_batch -- <token>
 ```
+```bash
+cargo run --example get_map
+```
 
 The `lookup` example above looks more or less like
 ```rust
@@ -66,6 +69,7 @@ async fn main() {
 * Smart LRU cache for cost and quota savings.
 * Structured and type checked query results.
 * Bulk IP address lookup using IPinfo [batch API](https://ipinfo.io/developers/batch).
+* Locate IPs on a World Map.
 
 #### Internationalization
 
