@@ -3,6 +3,7 @@ use std::net::IpAddr;
 
 /// IPInfo Utility Functions
 
+const CACHE_KEY_VERSION: &str = "1";
 const BOGON_NETWORKS : &[&str] = &[
 	"0.0.0.0/8",
 	"10.0.0.0/8",
@@ -71,4 +72,8 @@ pub fn is_bogon(ip_address: &str) -> bool {
         }
         Err(_) => false,
     }
+}
+
+pub fn cache_key(k: &str) -> String {
+	format!("{}:{}", k, CACHE_KEY_VERSION)
 }

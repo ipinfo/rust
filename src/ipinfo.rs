@@ -21,6 +21,7 @@ use crate::{
     CountryCurrency, 
     Continent,
     is_bogon,
+    cache_key,
     VERSION,
 };
 
@@ -183,7 +184,7 @@ impl IpInfo {
 
         // Check for cache hits
         ips.iter()
-            .for_each(|x| match self.cache.get(&x.to_string()) {
+            .for_each(|x| match self.cache.get(&cache_key(x)) {
                 Some(detail) => hits.push(detail.clone()),
                 None => misses.push(*x),
             });
@@ -243,7 +244,7 @@ impl IpInfo {
 
         // Update cache
         results.iter().for_each(|x| {
-            self.cache.put(x.0.clone(), x.1.clone());
+            self.cache.put(cache_key(x.0.as_str()), x.1.clone());
         });
 
         // Add cache hits to the result
@@ -280,7 +281,7 @@ impl IpInfo {
         }
 
         // Check for cache hit
-        let cached_detail = self.cache.get(&ip.to_string());
+        let cached_detail = self.cache.get(&cache_key(ip));
 
         if !cached_detail.is_none() {
             return Ok(cached_detail.unwrap().clone());
@@ -316,8 +317,7 @@ impl IpInfo {
         self.populate_static_details(&mut details);
 
         // update cache
-        self.cache.put(ip.to_string(), details.clone());
-
+        self.cache.put(cache_key(ip), details.clone());
         Ok(details)
     }
 
