@@ -3,7 +3,7 @@ use std::net::IpAddr;
 
 /// IPInfo Utility Functions
 
-const CACHE_KEY_VERSION: i32 = 1;
+const CACHE_KEY_VERSION: &str = "1";
 const BOGON_NETWORKS : &[&str] = &[
 	"0.0.0.0/8",
 	"10.0.0.0/8",
