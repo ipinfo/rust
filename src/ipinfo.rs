@@ -279,7 +279,7 @@ impl IpInfo {
             } else {
                 match self._lookup_batch(client.clone(), lookup_list).await {
                     Ok(result) => results.extend(result),
-                    Err(_) => return Err(err!(TimeOutError)),
+                    Err(_) => return Err(err!(IpRequestError)),
                 }
             }
         }
