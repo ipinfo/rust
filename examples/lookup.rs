@@ -1,5 +1,5 @@
-use std::env;
 use ipinfo::{IpInfo, IpInfoConfig};
+use std::env;
 
 #[tokio::main]
 async fn main() {
@@ -10,14 +10,13 @@ async fn main() {
         ..Default::default()
     };
 
-    let mut ipinfo = IpInfo::new(config)
-        .expect("should construct");
+    let mut ipinfo = IpInfo::new(config).expect("should construct");
 
     let res = ipinfo.lookup("8.8.8.8").await;
     match res {
         Ok(r) => {
             println!("{} lookup result: {:?}", "8.8.8.8", r);
-        },
+        }
         Err(e) => println!("error occurred: {}", &e.to_string()),
     }
 }

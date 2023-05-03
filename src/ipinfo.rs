@@ -12,17 +12,11 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-use std::{fs, collections::HashMap, time::Duration, num::NonZeroUsize};
+use std::{collections::HashMap, fs, num::NonZeroUsize, time::Duration};
 
 use crate::{
-    IpDetails,
-    IpError,
-    CountryFlag, 
-    CountryCurrency, 
-    Continent,
-    is_bogon,
-    cache_key,
-    VERSION,
+    cache_key, is_bogon, Continent, CountryCurrency, CountryFlag, IpDetails,
+    IpError, BATCH_MAX_SIZE, BATCH_REQ_TIMEOUT_DEFAULT, VERSION,
 };
 
 use lru::LruCache;
@@ -33,6 +27,7 @@ use reqwest::header::{
 };
 
 use include_dir::{include_dir, Dir};
+use tokio::time::timeout;
 static ASSETS_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/assets");
 
 /// IpInfo structure configuration.
@@ -59,7 +54,7 @@ pub struct IpInfoConfig {
     pub country_currencies_file_path: Option<String>,
 
     /// The file path of `continents.json`
-    pub continents_file_path: Option<String>
+    pub continents_file_path: Option<String>,
 }
 
 impl Default for IpInfoConfig {
@@ -72,7 +67,7 @@ impl Default for IpInfoConfig {
             eu_file_path: None,
             country_flags_file_path: None,
             country_currencies_file_path: None,
-            continents_file_path: None 
+            continents_file_path: None,
         }
     }
 }
@@ -83,11 +78,27 @@ pub struct IpInfo {
     token: Option<String>,
     client: reqwest::Client,
     cache: LruCache<String, IpDetails>,
-    countries: HashMap<String,String>,
+    countries: HashMap<String, String>,
     eu: Vec<String>,
-    country_flags: HashMap<String,CountryFlag>,
-    country_currencies: HashMap<String,CountryCurrency>,
-    continents: HashMap<String,Continent>
+    country_flags: HashMap<String, CountryFlag>,
+    country_currencies: HashMap<String, CountryCurrency>,
+    continents: HashMap<String, Continent>,
+}
+
+pub struct BatchReqOpts {
+    batch_size: u64,
+    timeout_per_batch: Duration,
+    timeout_total: Option<Duration>,
+}
+
+impl Default for BatchReqOpts {
+    fn default() -> Self {
+        Self {
+            batch_size: BATCH_MAX_SIZE,
+            timeout_per_batch: BATCH_REQ_TIMEOUT_DEFAULT,
+            timeout_total: None,
+        }
+    }
 }
 
 impl IpInfo {
@@ -110,7 +121,9 @@ impl IpInfo {
             url,
             client,
             token: config.token,
-            cache: LruCache::new(NonZeroUsize::new(config.cache_size).unwrap()),
+            cache: LruCache::new(
+                NonZeroUsize::new(config.cache_size).unwrap(),
+            ),
             countries: HashMap::new(),
             eu: Vec::new(),
             country_flags: HashMap::new(),
@@ -119,43 +132,78 @@ impl IpInfo {
         };
 
         if config.countries_file_path.is_none() {
-            let t_file = ASSETS_DIR.get_file("countries.json").expect("error opening file");
-            ipinfo_obj.countries =  serde_json::from_str(t_file.contents_utf8().unwrap()).expect("error parsing JSON!");
+            let t_file = ASSETS_DIR
+                .get_file("countries.json")
+                .expect("error opening file");
+            ipinfo_obj.countries =
+                serde_json::from_str(t_file.contents_utf8().unwrap())
+                    .expect("error parsing JSON!");
         } else {
-            let t_file = fs::File::open(config.countries_file_path.as_ref().unwrap()).expect("error opening file");
-            ipinfo_obj.countries = serde_json::from_reader(t_file).expect("error parsing JSON!");
+            let t_file =
+                fs::File::open(config.countries_file_path.as_ref().unwrap())
+                    .expect("error opening file");
+            ipinfo_obj.countries =
+                serde_json::from_reader(t_file).expect("error parsing JSON!");
         }
 
         if config.eu_file_path.is_none() {
-            let t_file = ASSETS_DIR.get_file("eu.json").expect("error opening file");
-            ipinfo_obj.eu =  serde_json::from_str(t_file.contents_utf8().unwrap()).expect("error parsing JSON!");
+            let t_file =
+                ASSETS_DIR.get_file("eu.json").expect("error opening file");
+            ipinfo_obj.eu =
+                serde_json::from_str(t_file.contents_utf8().unwrap())
+                    .expect("error parsing JSON!");
         } else {
-            let t_file = fs::File::open(config.eu_file_path.as_ref().unwrap()).expect("error opening file");
-            ipinfo_obj.eu = serde_json::from_reader(t_file).expect("error parsing JSON!");
+            let t_file = fs::File::open(config.eu_file_path.as_ref().unwrap())
+                .expect("error opening file");
+            ipinfo_obj.eu =
+                serde_json::from_reader(t_file).expect("error parsing JSON!");
         }
 
         if config.country_flags_file_path.is_none() {
-            let t_file = ASSETS_DIR.get_file("flags.json").expect("error opening file");
-            ipinfo_obj.country_flags =  serde_json::from_str(t_file.contents_utf8().unwrap()).expect("error parsing JSON!");
+            let t_file = ASSETS_DIR
+                .get_file("flags.json")
+                .expect("error opening file");
+            ipinfo_obj.country_flags =
+                serde_json::from_str(t_file.contents_utf8().unwrap())
+                    .expect("error parsing JSON!");
         } else {
-            let t_file = fs::File::open(config.country_flags_file_path.as_ref().unwrap()).expect("error opening file");
-            ipinfo_obj.country_flags = serde_json::from_reader(t_file).expect("error parsing JSON!");
+            let t_file = fs::File::open(
+                config.country_flags_file_path.as_ref().unwrap(),
+            )
+            .expect("error opening file");
+            ipinfo_obj.country_flags =
+                serde_json::from_reader(t_file).expect("error parsing JSON!");
         }
 
         if config.country_currencies_file_path.is_none() {
-            let t_file = ASSETS_DIR.get_file("currency.json").expect("error opening file");
-            ipinfo_obj.country_currencies =  serde_json::from_str(t_file.contents_utf8().unwrap()).expect("error parsing JSON!");
+            let t_file = ASSETS_DIR
+                .get_file("currency.json")
+                .expect("error opening file");
+            ipinfo_obj.country_currencies =
+                serde_json::from_str(t_file.contents_utf8().unwrap())
+                    .expect("error parsing JSON!");
         } else {
-            let t_file = fs::File::open(config.country_currencies_file_path.as_ref().unwrap()).expect("error opening file");
-            ipinfo_obj.country_currencies = serde_json::from_reader(t_file).expect("error parsing JSON!");
+            let t_file = fs::File::open(
+                config.country_currencies_file_path.as_ref().unwrap(),
+            )
+            .expect("error opening file");
+            ipinfo_obj.country_currencies =
+                serde_json::from_reader(t_file).expect("error parsing JSON!");
         }
 
         if config.continents_file_path.is_none() {
-            let t_file = ASSETS_DIR.get_file("continent.json").expect("error opening file");
-            ipinfo_obj.continents =  serde_json::from_str(t_file.contents_utf8().unwrap()).expect("error parsing JSON!");
+            let t_file = ASSETS_DIR
+                .get_file("continent.json")
+                .expect("error opening file");
+            ipinfo_obj.continents =
+                serde_json::from_str(t_file.contents_utf8().unwrap())
+                    .expect("error parsing JSON!");
         } else {
-            let t_file = fs::File::open(config.continents_file_path.as_ref().unwrap()).expect("error opening file");
-            ipinfo_obj.continents = serde_json::from_reader(t_file).expect("error parsing JSON!");
+            let t_file =
+                fs::File::open(config.continents_file_path.as_ref().unwrap())
+                    .expect("error opening file");
+            ipinfo_obj.continents =
+                serde_json::from_reader(t_file).expect("error parsing JSON!");
         }
 
         Ok(ipinfo_obj)
@@ -166,21 +214,23 @@ impl IpInfo {
     /// # Examples
     ///
     /// ```no_run
-    /// use ipinfo::IpInfo;
+    /// use ipinfo::{IpInfo, BatchReqOpts};
     /// #[tokio::main]
     /// async fn main() {
     ///     let mut ipinfo = IpInfo::new(Default::default()).expect("should construct");
-    ///     let res = ipinfo.lookup_batch(&["8.8.8.8"]).await.expect("should run");
+    ///     let res = ipinfo.lookup_batch(&["8.8.8.8"], BatchReqOpts::default()).await.expect("should run");
     /// }
     /// ```
     pub async fn lookup_batch(
         &mut self,
         ips: &[&str],
+        batch_config: BatchReqOpts,
     ) -> Result<HashMap<String, IpDetails>, IpError> {
         let mut hits: Vec<IpDetails> = vec![];
         let mut misses: Vec<&str> = vec![];
         let mut to_lookup: Vec<&str> = vec![];
         let mut details_bogon = vec![];
+        let mut results: HashMap<String, IpDetails> = HashMap::new();
 
         // Check for cache hits
         ips.iter()
@@ -197,39 +247,42 @@ impl IpInfo {
                     bogon: Some(true),
                     ..Default::default()
                 }),
-                false => to_lookup.push(ip_address)
+                false => to_lookup.push(ip_address),
             }
         }
 
-        // Lookup cache misses which are not bogon
-        let response = self
-            .client
-            .post(&format!("{}/batch", self.url))
-            .headers(Self::construct_headers())
-            .bearer_auth(&self.token.as_ref().unwrap_or(&"".to_string()))
-            .json(&json!(to_lookup))
-            .send()
-            .await?;
+        let client = reqwest::Client::builder()
+            .timeout(batch_config.timeout_per_batch)
+            .build()?;
+        for i in (0..to_lookup.len()).step_by(batch_config.batch_size as usize)
+        {
+            let mut end = i + batch_config.batch_size as usize;
+            if end > to_lookup.len() {
+                end = to_lookup.len();
+            }
 
-        // Check if we exhausted our request quota
-        if let reqwest::StatusCode::TOO_MANY_REQUESTS = response.status() {
-            return Err(err!(RateLimitExceededError));
+            let lookup_list = &to_lookup[i..end];
+
+            if let Some(total_timeout) = batch_config.timeout_total {
+                match timeout(
+                    total_timeout,
+                    self._lookup_batch(client.clone(), lookup_list),
+                )
+                .await
+                {
+                    Ok(result) => match result {
+                        Ok(details) => results.extend(details),
+                        Err(_) => return Err(err!(IpRequestError)),
+                    },
+                    Err(_) => return Err(err!(TimeOutError)),
+                }
+            } else {
+                match self._lookup_batch(client.clone(), lookup_list).await {
+                    Ok(result) => results.extend(result),
+                    Err(_) => return Err(err!(IpRequestError)),
+                }
+            }
         }
-
-        // Acquire response
-        let raw_resp = response.error_for_status()?.text().await?;
-
-        // Parse the response
-        let resp: serde_json::Value = serde_json::from_str(&raw_resp)?;
-
-        // Return if an error occurred
-        if let Some(e) = resp["error"].as_str() {
-            return Err(err!(IpRequestError, e));
-        }
-
-        // Parse the results
-        let mut results: HashMap<String, IpDetails> =
-            serde_json::from_str(&raw_resp)?;
 
         // Add country_name and EU status to response
         for detail in results.to_owned() {
@@ -255,29 +308,62 @@ impl IpInfo {
         Ok(results)
     }
 
+    async fn _lookup_batch(
+        self: &Self,
+        client: reqwest::Client,
+        ips: &[&str],
+    ) -> Result<HashMap<String, IpDetails>, IpError> {
+        // Lookup cache misses which are not bogon
+        let response = client
+            .post(&format!("{}/batch", self.url))
+            .headers(Self::construct_headers())
+            .bearer_auth(&self.token.as_ref().unwrap_or(&"".to_string()))
+            .json(&json!(ips))
+            .send()
+            .await?;
+
+        // Check if we exhausted our request quota
+        if let reqwest::StatusCode::TOO_MANY_REQUESTS = response.status() {
+            return Err(err!(RateLimitExceededError));
+        }
+
+        // Acquire response
+        let raw_resp = response.error_for_status()?.text().await?;
+
+        // Parse the response
+        let resp: serde_json::Value = serde_json::from_str(&raw_resp)?;
+
+        // Return if an error occurred
+        if let Some(e) = resp["error"].as_str() {
+            return Err(err!(IpRequestError, e));
+        }
+
+        // Parse the results
+        let result: HashMap<String, IpDetails> =
+            serde_json::from_str(&raw_resp)?;
+        return Ok(result);
+    }
+
     /// looks up IPDetails for a single IP Address
     ///
     /// # Example
     ///
     /// ```no_run
     /// use ipinfo::IpInfo;
-    /// 
+    ///
     ///  #[tokio::main]
     /// async fn main() {
     ///     let mut ipinfo = IpInfo::new(Default::default()).expect("should construct");
     ///     let res = ipinfo.lookup("8.8.8.8").await.expect("should run");
     /// }
     /// ```
-    pub async fn lookup(
-        &mut self,
-        ip: &str,
-    ) -> Result<IpDetails, IpError> {
+    pub async fn lookup(&mut self, ip: &str) -> Result<IpDetails, IpError> {
         if is_bogon(&ip.to_string()) {
             return Ok(IpDetails {
                 ip: ip.to_string(),
                 bogon: Some(true),
                 ..Default::default() // fill remaining with default values
-            })
+            });
         }
 
         // Check for cache hit
@@ -327,17 +413,14 @@ impl IpInfo {
     ///
     /// ```no_run
     /// use ipinfo::IpInfo;
-    /// 
+    ///
     ///  #[tokio::main]
     /// async fn main() {
     ///     let ipinfo = IpInfo::new(Default::default()).expect("should construct");
     ///     let map_url = ipinfo.get_map(&["8.8.8.8", "4.2.2.4"]).await.expect("should run");
     /// }
     /// ```
-    pub async fn get_map(
-        &self,
-        ips: &[&str],
-    ) -> Result<String, IpError> {
+    pub async fn get_map(&self, ips: &[&str]) -> Result<String, IpError> {
         if ips.len() > 500_000 {
             return Err(err!(MapLimitError));
         }
@@ -345,17 +428,16 @@ impl IpInfo {
         let map_url = &format!("{}/tools/map?cli=1", self.url);
         let client = self.client.clone();
         let json_ips = serde_json::json!(ips);
-        
-        let response = client
-            .post(map_url)
-            .json(&json_ips)
-            .send().await?;
+
+        let response = client.post(map_url).json(&json_ips).send().await?;
         if !response.status().is_success() {
             return Err(err!(HTTPClientError));
         }
 
         let response_json: serde_json::Value = response.json().await?;
-        let report_url = response_json["reportUrl"].as_str().ok_or("Report URL not found");
+        let report_url = response_json["reportUrl"]
+            .as_str()
+            .ok_or("Report URL not found");
         Ok(report_url.unwrap().to_string())
     }
 
@@ -365,9 +447,11 @@ impl IpInfo {
             let country_name = self.countries.get(&details.country).unwrap();
             details.country_name = Some(country_name.to_string());
             details.is_eu = Some(self.eu.contains(&details.country));
-            let country_flag = self.country_flags.get(&details.country).unwrap();
+            let country_flag =
+                self.country_flags.get(&details.country).unwrap();
             details.country_flag = Some(country_flag.to_owned());
-            let country_currency = self.country_currencies.get(&details.country).unwrap();
+            let country_currency =
+                self.country_currencies.get(&details.country).unwrap();
             details.country_currency = Some(country_currency.to_owned());
             let continent = self.continents.get(&details.country).unwrap();
             details.continent = Some(continent.to_owned());
@@ -431,7 +515,8 @@ mod tests {
     async fn request_single_ip() {
         let mut ipinfo = get_ipinfo_client();
 
-        let details = ipinfo.lookup("66.87.125.72").await.expect("should lookup");
+        let details =
+            ipinfo.lookup("66.87.125.72").await.expect("should lookup");
 
         assert_eq!(details.ip, "66.87.125.72");
     }
@@ -440,9 +525,14 @@ mod tests {
     async fn request_no_token() {
         let mut ipinfo =
             IpInfo::new(Default::default()).expect("should construct");
-        
+
         assert_eq!(
-            ipinfo.lookup_batch(&["8.8.8.8"]).await.err().unwrap().kind(),
+            ipinfo
+                .lookup_batch(&["8.8.8.8"], BatchReqOpts::default())
+                .await
+                .err()
+                .unwrap()
+                .kind(),
             IpErrorKind::IpRequestError
         );
     }
@@ -452,7 +542,7 @@ mod tests {
         let mut ipinfo = get_ipinfo_client();
 
         let details = ipinfo
-            .lookup_batch(&["8.8.8.8", "4.2.2.4"])
+            .lookup_batch(&["8.8.8.8", "4.2.2.4"], BatchReqOpts::default())
             .await
             .expect("should lookup");
 
@@ -467,9 +557,27 @@ mod tests {
         assert_eq!(ip8.city, "Mountain View");
         assert_eq!(ip8.region, "California");
         assert_eq!(ip8.country, "US");
-        assert_eq!(ip8.country_flag, Some(CountryFlag{emoji: "🇺🇸".to_owned(), unicode: "U+1F1FA U+1F1F8".to_owned()}));
-        assert_eq!(ip8.country_currency, Some(CountryCurrency{code: "USD".to_owned(), symbol: "$".to_owned()}));
-        assert_eq!(ip8.continent, Some(Continent{code: "NA".to_owned(), name: "North America".to_owned()}));
+        assert_eq!(
+            ip8.country_flag,
+            Some(CountryFlag {
+                emoji: "🇺🇸".to_owned(),
+                unicode: "U+1F1FA U+1F1F8".to_owned()
+            })
+        );
+        assert_eq!(
+            ip8.country_currency,
+            Some(CountryCurrency {
+                code: "USD".to_owned(),
+                symbol: "$".to_owned()
+            })
+        );
+        assert_eq!(
+            ip8.continent,
+            Some(Continent {
+                code: "NA".to_owned(),
+                name: "North America".to_owned()
+            })
+        );
         assert_eq!(ip8.loc, "37.4056,-122.0775");
         assert_eq!(ip8.postal, Some("94043".to_owned()));
         assert_eq!(ip8.timezone, Some("America/Los_Angeles".to_owned()));
@@ -491,7 +599,10 @@ mod tests {
         let mut ipinfo = get_ipinfo_client();
 
         // Populate the cache with 8.8.8.8
-        let details = ipinfo.lookup_batch(&["8.8.8.8"]).await.expect("should lookup");
+        let details = ipinfo
+            .lookup_batch(&["8.8.8.8"], BatchReqOpts::default())
+            .await
+            .expect("should lookup");
 
         // Assert 1 result
         assert!(details.contains_key("8.8.8.8"));
@@ -499,7 +610,7 @@ mod tests {
 
         // Should have a cache hit for 8.8.8.8 and query for 4.2.2.4
         let details = ipinfo
-            .lookup_batch(&["4.2.2.4", "8.8.8.8"])
+            .lookup_batch(&["4.2.2.4", "8.8.8.8"], BatchReqOpts::default())
             .await
             .expect("should lookup");
 
