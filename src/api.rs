@@ -42,7 +42,7 @@ pub struct IpDetails {
 
     /// EU status of the country.
     pub is_eu: Option<bool>,
-    
+
     /// Flag and unicode of the country.
     pub country_flag: Option<CountryFlag>,
 
@@ -197,19 +197,19 @@ pub struct DomainsDetails {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub struct CountryFlag {
     pub emoji: String,
-    pub unicode: String
+    pub unicode: String,
 }
 
 /// CountryCurrency details.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub struct CountryCurrency {
     pub code: String,
-    pub symbol: String
+    pub symbol: String,
 }
 
 /// Continent details.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub struct Continent {
     pub code: String,
-    pub name: String
+    pub name: String,
 }

@@ -55,6 +55,9 @@ pub enum IpErrorKind {
 
     /// Map limit error.
     MapLimitError,
+
+    // Timeout exceeded.
+    TimeOutError,
 }
 
 impl IpErrorKind {
@@ -65,7 +68,10 @@ impl IpErrorKind {
             IpErrorKind::RateLimitExceededError => "rate limit exceeded",
             IpErrorKind::IpRequestError => "application error",
             IpErrorKind::ParseError => "parse error",
-            IpErrorKind::MapLimitError => "You have exceeded maximum IP upload limit per request.",
+            IpErrorKind::TimeOutError => "timeout has been exceeded",
+            IpErrorKind::MapLimitError => {
+                "You have exceeded maximum IP upload limit per request."
+            }
         }
     }
 }
