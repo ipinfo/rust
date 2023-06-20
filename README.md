@@ -74,13 +74,14 @@ async fn main() {
 #### Internationalization
 
 When looking up an IP address, the `response` includes `country_name` which is the country name based on American English, `is_eu` which returns `true` if the country is a member of the European Union (EU), `country_flag` which includes emoji and unicode of a country's flag, `country_currency` 
-which includes code and symbol of a country's currency and `continent` which includes code and name of the continent. 
+which includes code and symbol of a country's currency, `country_flag_url` which returns a public link to the country's flag image as an SVG which can be used anywhere. and `continent` which includes code and name of the continent. 
 
 ```rust 
 let r = ipinfo.lookup("8.8.8.8");
 println!("{}: {}", "8.8.8.8", r.country_name) // United States
 println!("{}: {:?}", "8.8.8.8", r.is_eu) // Some(false)
 println!("{}: {:?}", "8.8.8.8", r.country_flag) // Some(CountryFlag { emoji: "🇺🇸", unicode: "U+1F1FA U+1F1F8" })
+println!("{}: {:?}", "8.8.8.8", r.country_flag_url) // Some(https://cdn.ipinfo.io/static/images/countries-flags/US.svg)
 println!("{}: {:?}", "8.8.8.8", r.country_currency) // Some(CountryCurrency { code: "USD", symbol: "$" })
 println!("{}: {:?}", "8.8.8.8", r.continent) // Some(Continent { code: "NA", name: "North America" })
 ```
