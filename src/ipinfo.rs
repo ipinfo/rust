@@ -30,6 +30,7 @@ use include_dir::{include_dir, Dir};
 use tokio::time::timeout;
 static ASSETS_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/assets");
 
+const COUNTRY_FLAG_URL : &str= "https://cdn.ipinfo.io/static/images/countries-flags/";
 /// IpInfo structure configuration.
 pub struct IpInfoConfig {
     /// IPinfo access token.
@@ -450,6 +451,8 @@ impl IpInfo {
             let country_flag =
                 self.country_flags.get(&details.country).unwrap();
             details.country_flag = Some(country_flag.to_owned());
+            let file_ext = ".svg";
+            details.country_flag_url = Some(COUNTRY_FLAG_URL.to_string() + &details.country + file_ext);
             let country_currency =
                 self.country_currencies.get(&details.country).unwrap();
             details.country_currency = Some(country_currency.to_owned());
@@ -557,6 +560,7 @@ mod tests {
         assert_eq!(ip8.city, "Mountain View");
         assert_eq!(ip8.region, "California");
         assert_eq!(ip8.country, "US");
+        assert_eq!(ip8.country_flag_url, Some("https://cdn.ipinfo.io/static/images/countries-flags/US.svg".to_owned()));
         assert_eq!(
             ip8.country_flag,
             Some(CountryFlag {

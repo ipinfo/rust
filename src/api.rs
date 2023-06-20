@@ -46,6 +46,9 @@ pub struct IpDetails {
     /// Flag and unicode of the country.
     pub country_flag: Option<CountryFlag>,
 
+    /// Link of the Flag of country.
+    pub country_flag_url: Option<String>,
+
     /// Code and symbol of the country's currency.
     pub country_currency: Option<CountryCurrency>,
 
