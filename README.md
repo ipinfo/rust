@@ -1,10 +1,10 @@
 # [<img src="https://ipinfo.io/static/ipinfo-small.svg" alt="IPinfo" width="24"/>](https://ipinfo.io/) IPinfo Rust Client Library
 
 This is the Rust client library for the [IPinfo.io](https://ipinfo.io) IP address API.
-It allows you to lookup your own IP address, or get any of the following details for an IP:
+It allows you to look up your own IP address, or get any of the following details for an IP:
 
-- [IP Geolocation](https://ipinfo.io/ip-geolocation-api) (city, region, country, postal code, latitude and longitude)
-- [ASN](https://ipinfo.io/asn-api) (ISP or network operator, associated domain name, and type, such as business, hosting or company)
+- [IP Geolocation](https://ipinfo.io/ip-geolocation-api) (city, region, country, postal code, latitude, and longitude)
+- [ASN](https://ipinfo.io/asn-api) (ISP or network operator, associated domain name, and type, such as business, hosting, or company)
 - [Company data](https://ipinfo.io/ip-company-api) (the name and domain of the business that uses the IP address)
 - [Carrier details](https://ipinfo.io/ip-carrier-api) (the name of the mobile carrier and MNC and MCC for that carrier if the IP is used exclusively for mobile traffic)
 
@@ -12,7 +12,7 @@ Check all the data we have for your IP address [here](https://ipinfo.io/what-is-
 
 ## Usage
 
-To use IPinfo, add the followinig to your `Cargo.toml` file.
+To use IPinfo, add the following to your `Cargo.toml` file.
 
 ```toml
 [dependencies]
@@ -29,7 +29,7 @@ data fields such as the IP type and company information. To get the complete lis
 information on an IP address and make more requests per day see [https://ipinfo.io/pricing](https://ipinfo.io/pricing).
 
 ## Examples
-There are several ready to run examples located in the `/examples` directory. These can be run directly, replacing `<token>` with your access token
+There are several ready-to-run examples located in the `/examples` directory. These can be run directly, replacing `<token>` with your access token
 
 ```bash
 cargo run --example lookup -- <token>
@@ -67,14 +67,14 @@ async fn main() {
 ## Features
 
 * Smart LRU cache for cost and quota savings.
-* Structured and type checked query results.
+* Structured and type-checked query results.
 * Bulk IP address lookup using IPinfo [batch API](https://ipinfo.io/developers/batch).
 * Locate IPs on a World Map.
 
 #### Internationalization
 
-When looking up an IP address, the `response` includes `country_name` which is the country name based on American English, `is_eu` which returns `true` if the country is a member of the European Union (EU), `country_flag` which includes emoji and unicode of a country's flag, `country_currency` 
-which includes code and symbol of a country's currency, `country_flag_url` which returns a public link to the country's flag image as an SVG which can be used anywhere. and `continent` which includes code and name of the continent. 
+When looking up an IP address, the `response` includes `country_name` which is the country name based on American English, `is_eu` which returns `true` if the country is a member of the European Union (EU), `country_flag` which includes the emoji and Unicode of a country's flag, `country_currency` 
+which includes the code and symbol of a country's currency, `country_flag_url` which returns a public link to the country's flag image as an SVG which can be used anywhere. and `continent` which includes the code and name of the continent. 
 
 ```rust 
 let r = ipinfo.lookup("8.8.8.8");
@@ -107,8 +107,8 @@ let config = IpInfoConfig {
 ## Other Libraries
 
 There are official IPinfo client libraries available for many languages including
-PHP, Go, Java, Ruby, and many popular frameworks such as Django, Rails and Laravel.
-There are also many third party libraries and integrations available for our API.
+PHP, Go, Java, Ruby, and many popular frameworks such as Django, Rails, and Laravel.
+There are also many third-party libraries and integrations available for our API.
 
 ## Contributing
 
