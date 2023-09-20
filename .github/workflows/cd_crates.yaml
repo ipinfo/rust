@@ -3,7 +3,7 @@ name: Release package to crates.io
 on:
   push:
     tags:
-      - 'v*'
+      - '*'
 
 permissions:
   contents: read
