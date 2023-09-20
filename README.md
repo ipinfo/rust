@@ -16,7 +16,7 @@ To use IPinfo, add the following to your `Cargo.toml` file.
 
 ```toml
 [dependencies]
-ipinfo = "2.1.0"
+ipinfo = "2.2.0"
 ```
 
 ## Getting Started
