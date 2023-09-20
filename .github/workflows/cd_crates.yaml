@@ -1,0 +1,29 @@
+name: Release package to crates.io
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout 
+    - uses: actions/checkout@v3
+
+    - name: Build
+      run: cargo build --verbose
+
+    - name: Run tests
+      run: cargo test --verbose
+      env: 
+        IPINFO_TOKEN: ${{ secrets.IPINFO_TOKEN }}
+
+    - name: Publish
+      run: cargo publish -v --token ${{ secrets.CARGO_REGISTRY_TOKEN }} --dry-run
