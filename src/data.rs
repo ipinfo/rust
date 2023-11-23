@@ -1,38 +1,10 @@
 use lazy_static::lazy_static;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct Continents {
-    pub code: String,
-    pub name: String,
-}
-
-#[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct Country {
-    pub code: String,
-    pub name: String,
-}
-
-#[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct Currency {
-    pub code: String,
-    pub symbol: String,
-}
-
-#[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct Eu {
-    pub code: String,
-}
-
-#[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct Flag {
-    pub emoji: String,
-    pub unicode: String,
-}
+use crate::{Continent, CountryCurrency, CountryFlag};
 
 lazy_static! {
-    pub static ref CONTINENT: HashMap<String, Continents> = {
+    pub static ref CONTINENT: HashMap<String, Continent> = {
         let json_data = r#"
         {
             "BD": {"code": "AS", "name": "Asia"},
@@ -290,7 +262,7 @@ lazy_static! {
         serde_json::from_str(json_data).expect("error parsing JSON!")
     };
 
-    pub static ref COUNTRIES: HashMap<String, Country> = {
+    pub static ref COUNTRIES: HashMap<String, String> = {
         let json_data = r#"
         {
             "BD": {"code": "AS", "name": "Asia"},
@@ -548,7 +520,7 @@ lazy_static! {
         serde_json::from_str(json_data).expect("error parsing JSON!")
     };
 
-    pub static ref CURRENCIES: HashMap<String, Currency> = {
+    pub static ref CURRENCIES: HashMap<String, CountryCurrency> = {
         let json_data = r#"
         {
             "AD" : { "code": "EUR" ,"symbol": "€"},
@@ -806,7 +778,7 @@ lazy_static! {
         serde_json::from_str(json_data).expect("error parsing JSON!")
     };
 
-    pub static ref EU: HashMap<String, Eu> = {
+    pub static ref EU: Vec<String> = {
         let json_data = r#"
         [
             "IE",
@@ -841,7 +813,7 @@ lazy_static! {
         serde_json::from_str(json_data).expect("error parsing JSON!")
     };
 
-    pub static ref FLAG: HashMap<String, Flag> = {
+    pub static ref FLAG: HashMap<String, CountryFlag> = {
         let json_data = r#"
         {
             "AD": {"emoji": "🇦🇩","unicode": "U+1F1E6 U+1F1E9"},
