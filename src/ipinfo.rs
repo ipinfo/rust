@@ -17,7 +17,7 @@ use std::{collections::HashMap, fs, num::NonZeroUsize, time::Duration};
 use crate::{
     cache_key, is_bogon, Continent, CountryCurrency, CountryFlag, IpDetails,
     IpError, BATCH_MAX_SIZE, BATCH_REQ_TIMEOUT_DEFAULT, VERSION,
-    COUNTRIES, EU, FLAG, CONTINENT, CURRENCIES,
+    COUNTRIES, EU, FLAGS, CONTINENTS, CURRENCIES,
 };
 
 use lru::LruCache;
@@ -151,7 +151,7 @@ impl IpInfo {
         }
 
         if config.country_flags_file_path.is_none() {
-            ipinfo_obj.country_flags = FLAG.clone();
+            ipinfo_obj.country_flags = FLAGS.clone();
         } else {
             let t_file = fs::File::open(
                 config.country_flags_file_path.as_ref().unwrap(),
@@ -173,7 +173,7 @@ impl IpInfo {
         }
 
         if config.continents_file_path.is_none() {
-            ipinfo_obj.continents = CONTINENT.clone();
+            ipinfo_obj.continents = CONTINENTS.clone();
         } else {
             let t_file =
                 fs::File::open(config.continents_file_path.as_ref().unwrap())
