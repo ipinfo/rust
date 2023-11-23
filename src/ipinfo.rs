@@ -40,6 +40,16 @@ pub struct IpInfoConfig {
 
     /// The size of the LRU cache. (default: 100 IPs)
     pub cache_size: usize,
+
+    pub defaut_countries: Option<HashMap<String, Country>>,
+
+    pub default_eu: Option<Vec<String> >,
+
+    pub default_flags: Option<HashMap<String, CountryFlag>>,
+
+    pub default_currency: Option<HashMap<String, CountryCurrency>>,
+
+    pub default_continents: Option<HashMap<String, Continent>>,
 }
 
 impl Default for IpInfoConfig {
@@ -48,6 +58,11 @@ impl Default for IpInfoConfig {
             token: None,
             timeout: Duration::from_secs(3),
             cache_size: 100,
+            defaut_countries: None,
+            default_eu: None,
+            default_flags: None,
+            default_currency: None,
+            default_continents: None,
         }
     }
 }
@@ -111,11 +126,12 @@ impl IpInfo {
             continents: HashMap::new(),
         };
 
-        ipinfo_obj.countries = COUNTRIES.clone();
-        ipinfo_obj.eu = EU.clone();
-        ipinfo_obj.country_flags = FLAG.clone();
-        ipinfo_obj.country_currencies = CURRENCIES.clone();
-        ipinfo_obj.continents = CONTINENT.clone();
+        ipinfo_obj.countries = config.defaut_countries.unwrap_or_else(|| COUNTRIES.clone());
+        ipinfo_obj.eu = config.default_eu.unwrap_or_else(|| EU.clone());
+        ipinfo_obj.country_flags = config.default_flags.unwrap_or_else(|| FLAG.clone());
+        ipinfo_obj.country_currencies = config.default_currency.unwrap_or_else(|| CURRENCIES.clone());
+        ipinfo_obj.continents = config.default_continents.unwrap_or_else(|| CONTINENT.clone());
+
         Ok(ipinfo_obj)
     }
 
