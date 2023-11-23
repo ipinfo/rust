@@ -12,7 +12,7 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-use std::{collections::HashMap, num::NonZeroUsize, time::Duration};
+use std::{collections::HashMap, fs, num::NonZeroUsize, time::Duration};
 
 use crate::{
     cache_key, is_bogon, Country, Continent, CountryCurrency, CountryFlag, IpDetails,
@@ -41,15 +41,20 @@ pub struct IpInfoConfig {
     /// The size of the LRU cache. (default: 100 IPs)
     pub cache_size: usize,
 
-    pub defaut_countries: Option<HashMap<String, Country>>,
+    /// The file path of `countries.json`
+    pub countries_file_path: Option<String>,
 
-    pub default_eu: Option<Vec<String> >,
+    /// The file path of `eu.json`
+    pub eu_file_path: Option<String>,
 
-    pub default_flags: Option<HashMap<String, CountryFlag>>,
+    /// The file path of `flags.json`
+    pub country_flags_file_path: Option<String>,
 
-    pub default_currency: Option<HashMap<String, CountryCurrency>>,
+    /// The file path of `currencies.json`
+    pub country_currencies_file_path: Option<String>,
 
-    pub default_continents: Option<HashMap<String, Continent>>,
+    /// The file path of `continents.json`
+    pub continents_file_path: Option<String>,
 }
 
 impl Default for IpInfoConfig {
@@ -58,11 +63,11 @@ impl Default for IpInfoConfig {
             token: None,
             timeout: Duration::from_secs(3),
             cache_size: 100,
-            defaut_countries: None,
-            default_eu: None,
-            default_flags: None,
-            default_currency: None,
-            default_continents: None,
+            countries_file_path: None,
+            eu_file_path: None,
+            country_flags_file_path: None,
+            country_currencies_file_path: None,
+            continents_file_path: None,
         }
     }
 }
@@ -126,11 +131,61 @@ impl IpInfo {
             continents: HashMap::new(),
         };
 
-        ipinfo_obj.countries = config.defaut_countries.unwrap_or_else(|| COUNTRIES.clone());
-        ipinfo_obj.eu = config.default_eu.unwrap_or_else(|| EU.clone());
-        ipinfo_obj.country_flags = config.default_flags.unwrap_or_else(|| FLAG.clone());
-        ipinfo_obj.country_currencies = config.default_currency.unwrap_or_else(|| CURRENCIES.clone());
-        ipinfo_obj.continents = config.default_continents.unwrap_or_else(|| CONTINENT.clone());
+        // ipinfo_obj.countries = config.defaut_countries.unwrap_or_else(|| COUNTRIES.clone());
+        if config.countries_file_path.is_none() {
+            ipinfo_obj.countries = COUNTRIES.clone();
+        } else {
+            let t_file =
+                fs::File::open(config.countries_file_path.as_ref().unwrap())
+                    .expect("error opening file");
+            ipinfo_obj.countries =
+                serde_json::from_reader(t_file).expect("error parsing JSON!");
+        }
+
+        // ipinfo_obj.eu = config.default_eu.unwrap_or_else(|| EU.clone());
+        if config.eu_file_path.is_none() {
+            ipinfo_obj.eu = EU.clone();
+        } else {
+            let t_file = fs::File::open(config.eu_file_path.as_ref().unwrap())
+                .expect("error opening file");
+            ipinfo_obj.eu =
+                serde_json::from_reader(t_file).expect("error parsing JSON!");
+        }
+
+        // ipinfo_obj.country_flags = config.default_flags.unwrap_or_else(|| FLAG.clone());
+        if config.country_flags_file_path.is_none() {
+            ipinfo_obj.country_flags = FLAG.clone();
+        } else {
+            let t_file = fs::File::open(
+                config.country_flags_file_path.as_ref().unwrap(),
+            )
+            .expect("error opening file");
+            ipinfo_obj.country_flags =
+                serde_json::from_reader(t_file).expect("error parsing JSON!");
+        }
+
+        // ipinfo_obj.country_currencies = config.default_currency.unwrap_or_else(|| CURRENCIES.clone());
+        if config.country_currencies_file_path.is_none() {
+            ipinfo_obj.country_currencies = CURRENCIES.clone();
+        } else {
+            let t_file = fs::File::open(
+                config.country_currencies_file_path.as_ref().unwrap(),
+            )
+            .expect("error opening file");
+            ipinfo_obj.country_currencies =
+                serde_json::from_reader(t_file).expect("error parsing JSON!");
+        }
+
+        // ipinfo_obj.continents = config.default_continents.unwrap_or_else(|| CONTINENT.clone());
+        if config.continents_file_path.is_none() {
+            ipinfo_obj.continents = CONTINENT.clone();
+        } else {
+            let t_file =
+                fs::File::open(config.continents_file_path.as_ref().unwrap())
+                    .expect("error opening file");
+            ipinfo_obj.continents =
+            serde_json::from_reader(t_file).expect("error parsing JSON!");
+        }
 
         Ok(ipinfo_obj)
     }
