@@ -55,8 +55,10 @@ mod error;
 mod api;
 mod ipinfo;
 mod util;
+mod data;
 
 pub use crate::ipinfo::*;
 pub use api::*;
 pub use error::*;
 pub use util::*;
+pub use data::*;
