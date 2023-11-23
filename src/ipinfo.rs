@@ -50,7 +50,7 @@ pub struct IpInfoConfig {
     // Default mapping of country codes to their respective flag emoji and unicode
     pub default_flags: Option<HashMap<String, CountryFlag>>,
 
-    // Default mapping of country codes to their respective currency details
+    // Default mapping of country codes to their respective currency code and symbol
     pub default_currencies: Option<HashMap<String, CountryCurrency>>,
 
     // Default mapping of country codes to their respective continent code and continent name
