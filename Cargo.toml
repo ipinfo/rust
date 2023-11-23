@@ -23,6 +23,7 @@ serde_json = "1.0"
 include_dir = "0.7.3"
 ipnetwork = "0.20.0"
 tokio = { version = "1", features = ["macros", "time"]}
+lazy_static = "1.4"
 
 [profile.release]
 overflow-checks = true
