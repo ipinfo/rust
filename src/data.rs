@@ -1,7 +1,7 @@
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 
-use crate::{Continent, CountryCurrency, CountryFlag};
+use crate::{Country, Continent, CountryCurrency, CountryFlag};
 
 lazy_static! {
     pub static ref CONTINENT: HashMap<String, Continent> = {
@@ -262,7 +262,7 @@ lazy_static! {
         serde_json::from_str(json_data).expect("error parsing JSON!")
     };
 
-    pub static ref COUNTRIES: HashMap<String, String> = {
+    pub static ref COUNTRIES: HashMap<String, Country> = {
         let json_data = r#"
         {
             "BD": {"code": "AS", "name": "Asia"},
