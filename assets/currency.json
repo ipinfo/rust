@@ -1,0 +1,5 @@
+{
+    "AD" : { "code": "EUR" ,"symbol": "€"},
+    "ZM" : { "code": "ZMK" ,"symbol": "ZK"},
+    "ZW" : { "code": "ZWL" ,"symbol": "$"}
+}
