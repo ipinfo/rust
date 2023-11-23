@@ -12,11 +12,12 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-use std::{collections::HashMap, fs, num::NonZeroUsize, time::Duration};
+use std::{collections::HashMap, num::NonZeroUsize, time::Duration};
 
 use crate::{
     cache_key, is_bogon, Continent, CountryCurrency, CountryFlag, IpDetails,
     IpError, BATCH_MAX_SIZE, BATCH_REQ_TIMEOUT_DEFAULT, VERSION,
+    COUNTRIES, EU, FLAG, CONTINENT, CURRENCIES,
 };
 
 use lru::LruCache;
@@ -26,9 +27,7 @@ use reqwest::header::{
     HeaderMap, HeaderValue, ACCEPT, CONTENT_TYPE, USER_AGENT,
 };
 
-use include_dir::{include_dir, Dir};
 use tokio::time::timeout;
-static ASSETS_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/assets");
 
 const COUNTRY_FLAG_URL : &str= "https://cdn.ipinfo.io/static/images/countries-flags/";
 /// IpInfo structure configuration.
@@ -132,81 +131,11 @@ impl IpInfo {
             continents: HashMap::new(),
         };
 
-        if config.countries_file_path.is_none() {
-            let t_file = ASSETS_DIR
-                .get_file("countries.json")
-                .expect("error opening file");
-            ipinfo_obj.countries =
-                serde_json::from_str(t_file.contents_utf8().unwrap())
-                    .expect("error parsing JSON!");
-        } else {
-            let t_file =
-                fs::File::open(config.countries_file_path.as_ref().unwrap())
-                    .expect("error opening file");
-            ipinfo_obj.countries =
-                serde_json::from_reader(t_file).expect("error parsing JSON!");
-        }
-
-        if config.eu_file_path.is_none() {
-            let t_file =
-                ASSETS_DIR.get_file("eu.json").expect("error opening file");
-            ipinfo_obj.eu =
-                serde_json::from_str(t_file.contents_utf8().unwrap())
-                    .expect("error parsing JSON!");
-        } else {
-            let t_file = fs::File::open(config.eu_file_path.as_ref().unwrap())
-                .expect("error opening file");
-            ipinfo_obj.eu =
-                serde_json::from_reader(t_file).expect("error parsing JSON!");
-        }
-
-        if config.country_flags_file_path.is_none() {
-            let t_file = ASSETS_DIR
-                .get_file("flags.json")
-                .expect("error opening file");
-            ipinfo_obj.country_flags =
-                serde_json::from_str(t_file.contents_utf8().unwrap())
-                    .expect("error parsing JSON!");
-        } else {
-            let t_file = fs::File::open(
-                config.country_flags_file_path.as_ref().unwrap(),
-            )
-            .expect("error opening file");
-            ipinfo_obj.country_flags =
-                serde_json::from_reader(t_file).expect("error parsing JSON!");
-        }
-
-        if config.country_currencies_file_path.is_none() {
-            let t_file = ASSETS_DIR
-                .get_file("currency.json")
-                .expect("error opening file");
-            ipinfo_obj.country_currencies =
-                serde_json::from_str(t_file.contents_utf8().unwrap())
-                    .expect("error parsing JSON!");
-        } else {
-            let t_file = fs::File::open(
-                config.country_currencies_file_path.as_ref().unwrap(),
-            )
-            .expect("error opening file");
-            ipinfo_obj.country_currencies =
-                serde_json::from_reader(t_file).expect("error parsing JSON!");
-        }
-
-        if config.continents_file_path.is_none() {
-            let t_file = ASSETS_DIR
-                .get_file("continent.json")
-                .expect("error opening file");
-            ipinfo_obj.continents =
-                serde_json::from_str(t_file.contents_utf8().unwrap())
-                    .expect("error parsing JSON!");
-        } else {
-            let t_file =
-                fs::File::open(config.continents_file_path.as_ref().unwrap())
-                    .expect("error opening file");
-            ipinfo_obj.continents =
-                serde_json::from_reader(t_file).expect("error parsing JSON!");
-        }
-
+        ipinfo_obj.countries = COUNTRIES.clone();
+        ipinfo_obj.eu = EU.clone();
+        ipinfo_obj.country_flags = FLAG.clone();
+        ipinfo_obj.country_currencies = CURRENCIES.clone();
+        ipinfo_obj.continents = CONTINENT.clone();
         Ok(ipinfo_obj)
     }
 
