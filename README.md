@@ -86,14 +86,6 @@ println!("{}: {:?}", "8.8.8.8", r.country_currency) // Some(CountryCurrency { co
 println!("{}: {:?}", "8.8.8.8", r.continent) // Some(Continent { code: "NA", name: "North America" })
 ```
 
-```rust
-let config = IpInfoConfig {
-    countries_file_path: Some("custom.json".to_string()),
-    eu_file_path: Some("custom_eu.json".to_string()),
-    ..Default::default()
-};
-```
-
 ## Other Libraries
 
 There are official IPinfo client libraries available for many languages including
