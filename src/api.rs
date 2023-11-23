@@ -15,7 +15,6 @@
 //! IPinfo API data structures.
 
 use std::collections::HashMap;
-use std::fmt;
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -197,13 +196,6 @@ pub struct DomainsDetails {
     pub domains: Vec<String>,
 }
 
-/// Country details.
-#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
-pub struct Country {
-    pub code: String,
-    pub name: String,
-}
-
 /// CountryFlag details.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub struct CountryFlag {
@@ -223,10 +215,4 @@ pub struct CountryCurrency {
 pub struct Continent {
     pub code: String,
     pub name: String,
-}
-
-impl fmt::Display for Country {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.name)
-    }
 }
