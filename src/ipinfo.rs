@@ -51,7 +51,7 @@ pub struct IpInfoConfig {
     pub default_flags: Option<HashMap<String, CountryFlag>>,
 
     // Default mapping of country codes to their respective currency details
-    pub default_currency: Option<HashMap<String, CountryCurrency>>,
+    pub default_currencies: Option<HashMap<String, CountryCurrency>>,
 
     // Default mapping of country codes to their respective continent code and continent name
     pub default_continents: Option<HashMap<String, Continent>>,
@@ -66,7 +66,7 @@ impl Default for IpInfoConfig {
             defaut_countries: None,
             default_eu: None,
             default_flags: None,
-            default_currency: None,
+            default_currencies: None,
             default_continents: None,
         }
     }
@@ -149,10 +149,10 @@ impl IpInfo {
             ipinfo_obj.country_flags = config.default_flags.unwrap();
         }
 
-        if config.default_currency.is_none() {
+        if config.default_currencies.is_none() {
             ipinfo_obj.country_currencies = CURRENCIES.clone();
         } else {
-            ipinfo_obj.country_currencies = config.default_currency.unwrap();
+            ipinfo_obj.country_currencies = config.default_currencies.unwrap();
         }
 
         if config.default_continents.is_none() {
