@@ -131,7 +131,6 @@ impl IpInfo {
             continents: HashMap::new(),
         };
 
-        // ipinfo_obj.countries = config.defaut_countries.unwrap_or_else(|| COUNTRIES.clone());
         if config.countries_file_path.is_none() {
             ipinfo_obj.countries = COUNTRIES.clone();
         } else {
@@ -142,7 +141,6 @@ impl IpInfo {
                 serde_json::from_reader(t_file).expect("error parsing JSON!");
         }
 
-        // ipinfo_obj.eu = config.default_eu.unwrap_or_else(|| EU.clone());
         if config.eu_file_path.is_none() {
             ipinfo_obj.eu = EU.clone();
         } else {
@@ -152,7 +150,6 @@ impl IpInfo {
                 serde_json::from_reader(t_file).expect("error parsing JSON!");
         }
 
-        // ipinfo_obj.country_flags = config.default_flags.unwrap_or_else(|| FLAG.clone());
         if config.country_flags_file_path.is_none() {
             ipinfo_obj.country_flags = FLAG.clone();
         } else {
@@ -164,7 +161,6 @@ impl IpInfo {
                 serde_json::from_reader(t_file).expect("error parsing JSON!");
         }
 
-        // ipinfo_obj.country_currencies = config.default_currency.unwrap_or_else(|| CURRENCIES.clone());
         if config.country_currencies_file_path.is_none() {
             ipinfo_obj.country_currencies = CURRENCIES.clone();
         } else {
@@ -176,7 +172,6 @@ impl IpInfo {
                 serde_json::from_reader(t_file).expect("error parsing JSON!");
         }
 
-        // ipinfo_obj.continents = config.default_continents.unwrap_or_else(|| CONTINENT.clone());
         if config.continents_file_path.is_none() {
             ipinfo_obj.continents = CONTINENT.clone();
         } else {
