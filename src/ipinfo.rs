@@ -179,7 +179,7 @@ impl IpInfo {
                 fs::File::open(config.continents_file_path.as_ref().unwrap())
                     .expect("error opening file");
             ipinfo_obj.continents =
-            serde_json::from_reader(t_file).expect("error parsing JSON!");
+                serde_json::from_reader(t_file).expect("error parsing JSON!");
         }
 
         Ok(ipinfo_obj)
