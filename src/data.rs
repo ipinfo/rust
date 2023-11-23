@@ -2,37 +2,37 @@ use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct Continent {
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct Continents {
     pub code: String,
     pub name: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Country {
     pub code: String,
     pub name: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Currency {
     pub code: String,
     pub symbol: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Eu {
     pub code: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Flag {
     pub emoji: String,
     pub unicode: String,
 }
 
 lazy_static! {
-    pub static ref CONTINENT: HashMap<String, Continent> = {
+    pub static ref CONTINENT: HashMap<String, Continents> = {
         let json_data = r#"
         {
             "BD": {"code": "AS", "name": "Asia"},
