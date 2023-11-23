@@ -40,21 +40,6 @@ pub struct IpInfoConfig {
 
     /// The size of the LRU cache. (default: 100 IPs)
     pub cache_size: usize,
-
-    /// The file path of `countries.json`
-    pub countries_file_path: Option<String>,
-
-    /// The file path of `eu.json`
-    pub eu_file_path: Option<String>,
-
-    /// The file path of `flags.json`
-    pub country_flags_file_path: Option<String>,
-
-    /// The file path of `currencies.json`
-    pub country_currencies_file_path: Option<String>,
-
-    /// The file path of `continents.json`
-    pub continents_file_path: Option<String>,
 }
 
 impl Default for IpInfoConfig {
@@ -63,11 +48,6 @@ impl Default for IpInfoConfig {
             token: None,
             timeout: Duration::from_secs(3),
             cache_size: 100,
-            countries_file_path: None,
-            eu_file_path: None,
-            country_flags_file_path: None,
-            country_currencies_file_path: None,
-            continents_file_path: None,
         }
     }
 }
