@@ -15,7 +15,7 @@
 use std::{collections::HashMap, num::NonZeroUsize, time::Duration};
 
 use crate::{
-    cache_key, is_bogon, Continent, CountryCurrency, CountryFlag, IpDetails,
+    cache_key, is_bogon, Country, Continent, CountryCurrency, CountryFlag, IpDetails,
     IpError, BATCH_MAX_SIZE, BATCH_REQ_TIMEOUT_DEFAULT, VERSION,
     COUNTRIES, EU, FLAG, CONTINENT, CURRENCIES,
 };
@@ -78,7 +78,7 @@ pub struct IpInfo {
     token: Option<String>,
     client: reqwest::Client,
     cache: LruCache<String, IpDetails>,
-    countries: HashMap<String, String>,
+    countries: HashMap<String, Country>,
     eu: Vec<String>,
     country_flags: HashMap<String, CountryFlag>,
     country_currencies: HashMap<String, CountryCurrency>,
