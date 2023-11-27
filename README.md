@@ -16,7 +16,7 @@ To use IPinfo, add the following to your `Cargo.toml` file.
 
 ```toml
 [dependencies]
-ipinfo = "2.2.0"
+ipinfo = "3.0.0"
 ```
 
 ## Getting Started
@@ -73,10 +73,10 @@ async fn main() {
 
 #### Internationalization
 
-When looking up an IP address, the `response` includes `country_name` which is the country name based on American English, `is_eu` which returns `true` if the country is a member of the European Union (EU), `country_flag` which includes the emoji and Unicode of a country's flag, `country_currency` 
-which includes the code and symbol of a country's currency, `country_flag_url` which returns a public link to the country's flag image as an SVG which can be used anywhere. and `continent` which includes the code and name of the continent. 
+When looking up an IP address, the `response` includes `country_name` which is the country name based on American English, `is_eu` which returns `true` if the country is a member of the European Union (EU), `country_flag` which includes the emoji and Unicode of a country's flag, `country_currency`
+which includes the code and symbol of a country's currency, `country_flag_url` which returns a public link to the country's flag image as an SVG which can be used anywhere. and `continent` which includes the code and name of the continent.
 
-```rust 
+```rust
 let r = ipinfo.lookup("8.8.8.8");
 println!("{}: {}", "8.8.8.8", r.country_name) // United States
 println!("{}: {:?}", "8.8.8.8", r.is_eu) // Some(false)
