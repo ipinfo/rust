@@ -3,7 +3,7 @@ use std::env;
 
 #[tokio::main]
 async fn main() {
-    let token = env::args().skip(1).next();
+    let token = env::args().nth(1);
 
     let config = IpInfoConfig {
         token,
@@ -15,7 +15,7 @@ async fn main() {
     let res = ipinfo.lookup("8.8.8.8").await;
     match res {
         Ok(r) => {
-            println!("{} lookup result: {:?}", "8.8.8.8", r);
+            println!("8.8.8.8 lookup result: {:?}", r);
         }
         Err(e) => println!("error occurred: {}", &e.to_string()),
     }

@@ -261,7 +261,6 @@ lazy_static! {
         "#;
         serde_json::from_str(json_data).expect("error parsing JSON!")
     };
-
     pub static ref COUNTRIES: HashMap<String, String> = {
         let json_data = r#"
         {
@@ -519,7 +518,6 @@ lazy_static! {
         "#;
         serde_json::from_str(json_data).expect("error parsing JSON!")
     };
-
     pub static ref CURRENCIES: HashMap<String, CountryCurrency> = {
         let json_data = r#"
         {
@@ -777,7 +775,6 @@ lazy_static! {
         "#;
         serde_json::from_str(json_data).expect("error parsing JSON!")
     };
-
     pub static ref EU: Vec<String> = {
         let json_data = r#"
         [
@@ -812,7 +809,6 @@ lazy_static! {
         "#;
         serde_json::from_str(json_data).expect("error parsing JSON!")
     };
-
     pub static ref FLAGS: HashMap<String, CountryFlag> = {
         let json_data = r#"
         {
