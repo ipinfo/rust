@@ -2,8 +2,13 @@
 name = "ipinfo"
 description = "ipinfo: A Rust library for IPInfo"
 version = "3.0.0"
-authors = ["Amr Ali <amralicc@gmail.com>", "Uman Shahzad <uman@mslm.io>", "Umar Farooq <mail.umar.now@gmail.com>", "Fayzan Ahmad <fayzanx@gmail.com>"]
-edition = "2018"
+authors = [
+    "Amr Ali <amralicc@gmail.com>",
+    "Uman Shahzad <uman@mslm.io>",
+    "Umar Farooq <mail.umar.now@gmail.com>",
+    "Fayzan Ahmad <fayzanx@gmail.com>",
+]
+edition = "2021"
 license = "Apache-2.0"
 homepage = "https://github.com/ipinfo/rust/"
 readme = "README.md"
@@ -22,7 +27,7 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 include_dir = "0.7.3"
 ipnetwork = "0.20.0"
-tokio = { version = "1", features = ["macros", "time"]}
+tokio = { version = "1", features = ["macros", "time"] }
 lazy_static = "1.4"
 
 [profile.release]
