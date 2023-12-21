@@ -16,8 +16,8 @@ use std::{collections::HashMap, num::NonZeroUsize, time::Duration};
 
 use crate::{
     cache_key, is_bogon, Continent, CountryCurrency, CountryFlag, IpDetails,
-    IpError, BATCH_MAX_SIZE, BATCH_REQ_TIMEOUT_DEFAULT, VERSION,
-    COUNTRIES, EU, FLAGS, CONTINENTS, CURRENCIES,
+    IpError, BATCH_MAX_SIZE, BATCH_REQ_TIMEOUT_DEFAULT, CONTINENTS, COUNTRIES,
+    CURRENCIES, EU, FLAGS, VERSION,
 };
 
 use lru::LruCache;
@@ -29,7 +29,8 @@ use reqwest::header::{
 
 use tokio::time::timeout;
 
-const COUNTRY_FLAG_URL : &str= "https://cdn.ipinfo.io/static/images/countries-flags/";
+const COUNTRY_FLAG_URL: &str =
+    "https://cdn.ipinfo.io/static/images/countries-flags/";
 /// IpInfo structure configuration.
 pub struct IpInfoConfig {
     /// IPinfo access token.
@@ -45,7 +46,7 @@ pub struct IpInfoConfig {
     pub defaut_countries: Option<HashMap<String, String>>,
 
     // Default list of EU countries
-    pub default_eu: Option<Vec<String> >,
+    pub default_eu: Option<Vec<String>>,
 
     // Default mapping of country codes to their respective flag emoji and unicode
     pub default_flags: Option<HashMap<String, CountryFlag>>,
@@ -240,9 +241,8 @@ impl IpInfo {
         }
 
         // Add country_name and EU status to response
-        for detail in results.to_owned() {
-            let mut mut_details = results.get_mut(&detail.0).unwrap();
-            self.populate_static_details(&mut mut_details);
+        for detail in results.values_mut() {
+            self.populate_static_details(detail);
         }
 
         // Add Bogon IP Results
@@ -264,7 +264,7 @@ impl IpInfo {
     }
 
     async fn _lookup_batch(
-        self: &Self,
+        &self,
         client: reqwest::Client,
         ips: &[&str],
     ) -> Result<HashMap<String, IpDetails>, IpError> {
@@ -272,7 +272,7 @@ impl IpInfo {
         let response = client
             .post(&format!("{}/batch", self.url))
             .headers(Self::construct_headers())
-            .bearer_auth(&self.token.as_ref().unwrap_or(&"".to_string()))
+            .bearer_auth(self.token.as_deref().unwrap_or_default())
             .json(&json!(ips))
             .send()
             .await?;
@@ -296,7 +296,7 @@ impl IpInfo {
         // Parse the results
         let result: HashMap<String, IpDetails> =
             serde_json::from_str(&raw_resp)?;
-        return Ok(result);
+        Ok(result)
     }
 
     /// looks up IPDetails for a single IP Address
@@ -313,7 +313,7 @@ impl IpInfo {
     /// }
     /// ```
     pub async fn lookup(&mut self, ip: &str) -> Result<IpDetails, IpError> {
-        if is_bogon(&ip.to_string()) {
+        if is_bogon(ip) {
             return Ok(IpDetails {
                 ip: ip.to_string(),
                 bogon: Some(true),
@@ -324,8 +324,8 @@ impl IpInfo {
         // Check for cache hit
         let cached_detail = self.cache.get(&cache_key(ip));
 
-        if !cached_detail.is_none() {
-            return Ok(cached_detail.unwrap().clone());
+        if let Some(cached_detail) = cached_detail {
+            return Ok(cached_detail.clone());
         }
 
         // lookup in case of a cache miss
@@ -333,7 +333,7 @@ impl IpInfo {
             .client
             .get(&format!("{}/{}", self.url, ip))
             .headers(Self::construct_headers())
-            .bearer_auth(&self.token.as_ref().unwrap_or(&"".to_string()))
+            .bearer_auth(self.token.as_deref().unwrap_or_default())
             .send()
             .await?;
 
@@ -406,7 +406,9 @@ impl IpInfo {
                 self.country_flags.get(&details.country).unwrap();
             details.country_flag = Some(country_flag.to_owned());
             let file_ext = ".svg";
-            details.country_flag_url = Some(COUNTRY_FLAG_URL.to_string() + &details.country + file_ext);
+            details.country_flag_url = Some(
+                COUNTRY_FLAG_URL.to_string() + &details.country + file_ext,
+            );
             let country_currency =
                 self.country_currencies.get(&details.country).unwrap();
             details.country_currency = Some(country_currency.to_owned());
@@ -439,13 +441,13 @@ mod tests {
     use std::env;
 
     fn get_ipinfo_client() -> IpInfo {
-        return IpInfo::new(IpInfoConfig {
+        IpInfo::new(IpInfoConfig {
             token: Some(env::var("IPINFO_TOKEN").unwrap().to_string()),
             timeout: Duration::from_secs(3),
             cache_size: 100,
             ..Default::default()
         })
-        .expect("should construct");
+        .expect("should construct")
     }
 
     #[test]
@@ -514,7 +516,13 @@ mod tests {
         assert_eq!(ip8.city, "Mountain View");
         assert_eq!(ip8.region, "California");
         assert_eq!(ip8.country, "US");
-        assert_eq!(ip8.country_flag_url, Some("https://cdn.ipinfo.io/static/images/countries-flags/US.svg".to_owned()));
+        assert_eq!(
+            ip8.country_flag_url,
+            Some(
+                "https://cdn.ipinfo.io/static/images/countries-flags/US.svg"
+                    .to_owned()
+            )
+        );
         assert_eq!(
             ip8.country_flag,
             Some(CountryFlag {
@@ -580,10 +588,10 @@ mod tests {
 
     #[test]
     fn test_is_bogon() {
-        assert_eq!(true, is_bogon("169.254.0.1"));
-        assert_eq!(true, is_bogon("192.0.2.1"));
-        assert_eq!(false, is_bogon("8.8.8.8"));
-        assert_eq!(true, is_bogon("2001:db8::1"));
-        assert_eq!(false, is_bogon("2606:4700:4700:1111::2"));
+        assert!(is_bogon("169.254.0.1"));
+        assert!(is_bogon("192.0.2.1"));
+        assert!(!is_bogon("8.8.8.8"));
+        assert!(is_bogon("2001:db8::1"));
+        assert!(!is_bogon("2606:4700:4700:1111::2"));
     }
 }
