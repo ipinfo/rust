@@ -232,12 +232,12 @@ impl IpInfo {
             .build()?;
 
         // Remove duplicates
-        let set: HashSet<&str> = work.iter().cloned().collect();
-        work = set.into_iter().collect();
+        work.sort();
+        work.dedup();
 
         // Make batched requests
         for batch in work.chunks(batch_config.batch_size as usize) {
-            let resposne = self.batch_request(client.clone(), batch).await?;
+            let response = self.batch_request(client.clone(), batch).await?;
             results.extend(resposne);
         }
 
