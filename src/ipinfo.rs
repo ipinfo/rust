@@ -12,11 +12,7 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-use std::{
-    collections::{HashMap, HashSet},
-    num::NonZeroUsize,
-    time::Duration,
-};
+use std::{collections::HashMap, num::NonZeroUsize, time::Duration};
 
 use crate::{
     cache_key, is_bogon, Continent, CountryCurrency, CountryFlag, IpDetails,
@@ -238,7 +234,7 @@ impl IpInfo {
         // Make batched requests
         for batch in work.chunks(batch_config.batch_size as usize) {
             let response = self.batch_request(client.clone(), batch).await?;
-            results.extend(resposne);
+            results.extend(response);
         }
 
         // Add country_name and EU status to response
