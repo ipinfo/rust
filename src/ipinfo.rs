@@ -12,11 +12,7 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-use std::{
-    collections::HashMap,
-    num::NonZeroUsize,
-    time::Duration,
-};
+use std::{collections::HashMap, num::NonZeroUsize, time::Duration};
 
 use crate::{
     cache_key, is_bogon, Continent, CountryCurrency, CountryFlag, IpDetails,
