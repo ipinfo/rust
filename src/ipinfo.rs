@@ -13,7 +13,7 @@
 //   limitations under the License.
 
 use std::{
-    collections::{HashMap, HashSet},
+    collections::HashMap,
     num::NonZeroUsize,
     time::Duration,
 };
@@ -238,7 +238,7 @@ impl IpInfo {
         // Make batched requests
         for batch in work.chunks(batch_config.batch_size as usize) {
             let response = self.batch_request(client.clone(), batch).await?;
-            results.extend(resposne);
+            results.extend(response);
         }
 
         // Add country_name and EU status to response
