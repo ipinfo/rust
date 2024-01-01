@@ -12,7 +12,11 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-use std::{collections::HashMap, num::NonZeroUsize, time::Duration};
+use std::{
+    collections::{HashMap, HashSet},
+    num::NonZeroUsize,
+    time::Duration,
+};
 
 use crate::{
     cache_key, is_bogon, Continent, CountryCurrency, CountryFlag, IpDetails,
@@ -182,62 +186,59 @@ impl IpInfo {
         ips: &[&str],
         batch_config: BatchReqOpts,
     ) -> Result<HashMap<String, IpDetails>, IpError> {
-        let mut hits: Vec<IpDetails> = vec![];
-        let mut misses: Vec<&str> = vec![];
-        let mut to_lookup: Vec<&str> = vec![];
-        let mut details_bogon = vec![];
+        // Handle the total timeout condition
+        if let Some(total_timeout) = batch_config.timeout_total {
+            match timeout(total_timeout, self._lookup_batch(ips, batch_config))
+                .await
+            {
+                Ok(result) => result,
+                Err(_) => Err(err!(TimeOutError)),
+            }
+        } else {
+            self._lookup_batch(ips, batch_config).await
+        }
+    }
+
+    // Internal lookup_batch function. This ignores the total timeout condition
+    async fn _lookup_batch(
+        &mut self,
+        ips: &[&str],
+        batch_config: BatchReqOpts,
+    ) -> Result<HashMap<String, IpDetails>, IpError> {
         let mut results: HashMap<String, IpDetails> = HashMap::new();
 
-        // Check for cache hits
-        ips.iter()
-            .for_each(|x| match self.cache.get(&cache_key(x)) {
-                Some(detail) => hits.push(detail.clone()),
-                None => misses.push(*x),
-            });
-
-        // check for bogon ip addresses
-        for ip_address in misses.iter() {
-            match is_bogon(ip_address) {
-                true => details_bogon.push(IpDetails {
-                    ip: ip_address.to_string(),
-                    bogon: Some(true),
-                    ..Default::default()
-                }),
-                false => to_lookup.push(ip_address),
+        // Collect a list of ips we need to lookup.
+        // Filters out bogons and cache hits
+        let mut work = vec![];
+        for ip in ips.iter() {
+            if is_bogon(ip) {
+                results.insert(
+                    ip.to_string(),
+                    IpDetails {
+                        ip: ip.to_string(),
+                        bogon: Some(true),
+                        ..Default::default()
+                    },
+                );
+            } else if let Some(detail) = self.cache.get(&cache_key(ip)) {
+                results.insert(ip.to_string(), detail.clone());
+            } else {
+                work.push(*ip);
             }
         }
 
         let client = reqwest::Client::builder()
             .timeout(batch_config.timeout_per_batch)
             .build()?;
-        for i in (0..to_lookup.len()).step_by(batch_config.batch_size as usize)
-        {
-            let mut end = i + batch_config.batch_size as usize;
-            if end > to_lookup.len() {
-                end = to_lookup.len();
-            }
 
-            let lookup_list = &to_lookup[i..end];
+        // Remove duplicates
+        work.sort();
+        work.dedup();
 
-            if let Some(total_timeout) = batch_config.timeout_total {
-                match timeout(
-                    total_timeout,
-                    self._lookup_batch(client.clone(), lookup_list),
-                )
-                .await
-                {
-                    Ok(result) => match result {
-                        Ok(details) => results.extend(details),
-                        Err(_) => return Err(err!(IpRequestError)),
-                    },
-                    Err(_) => return Err(err!(TimeOutError)),
-                }
-            } else {
-                match self._lookup_batch(client.clone(), lookup_list).await {
-                    Ok(result) => results.extend(result),
-                    Err(_) => return Err(err!(IpRequestError)),
-                }
-            }
+        // Make batched requests
+        for batch in work.chunks(batch_config.batch_size as usize) {
+            let response = self.batch_request(client.clone(), batch).await?;
+            results.extend(resposne);
         }
 
         // Add country_name and EU status to response
@@ -245,25 +246,18 @@ impl IpInfo {
             self.populate_static_details(detail);
         }
 
-        // Add Bogon IP Results
-        for result in details_bogon {
-            results.insert(result.ip.clone(), result);
-        }
-
         // Update cache
-        results.iter().for_each(|x| {
-            self.cache.put(cache_key(x.0.as_str()), x.1.clone());
-        });
-
-        // Add cache hits to the result
-        hits.iter().for_each(|x| {
-            results.insert(x.ip.clone(), x.clone());
-        });
+        results
+            .iter()
+            .filter(|(ip, _)| !is_bogon(ip))
+            .for_each(|x| {
+                self.cache.put(cache_key(x.0.as_str()), x.1.clone());
+            });
 
         Ok(results)
     }
 
-    async fn _lookup_batch(
+    async fn batch_request(
         &self,
         client: reqwest::Client,
         ips: &[&str],
