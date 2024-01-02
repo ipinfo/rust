@@ -1,4 +1,4 @@
-//   Copyright 2019 IPinfo library developers
+//   Copyright 2019-2024 IPinfo library developers
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
 //   you may not use this file except in compliance with the License.
@@ -53,12 +53,14 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 #[macro_use]
 mod error;
 mod api;
+mod bogon;
 mod data;
 mod ipinfo;
 mod util;
 
 pub use crate::ipinfo::*;
 pub use api::*;
+pub use bogon::*;
 pub use data::*;
 pub use error::*;
 pub use util::*;

@@ -1,4 +1,4 @@
-//   Copyright 2019 IPinfo library developers
+//   Copyright 2019-2024 IPinfo library developers
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
 //   you may not use this file except in compliance with the License.
@@ -574,14 +574,5 @@ mod tests {
         assert!(details.contains_key("8.8.8.8"));
         assert!(details.contains_key("4.2.2.4"));
         assert_eq!(details.len(), 2);
-    }
-
-    #[test]
-    fn test_is_bogon() {
-        assert!(is_bogon("169.254.0.1"));
-        assert!(is_bogon("192.0.2.1"));
-        assert!(!is_bogon("8.8.8.8"));
-        assert!(is_bogon("2001:db8::1"));
-        assert!(!is_bogon("2606:4700:4700:1111::2"));
     }
 }
