@@ -31,6 +31,10 @@ use tokio::time::timeout;
 
 const COUNTRY_FLAG_URL: &str =
     "https://cdn.ipinfo.io/static/images/countries-flags/";
+
+const BASE_URL: &str = "https://ipinfo.io";
+const BASE_URL_V6: &str = "https://v6.ipinfo.io";
+
 /// IpInfo structure configuration.
 pub struct IpInfoConfig {
     /// IPinfo access token.
@@ -75,7 +79,6 @@ impl Default for IpInfoConfig {
 
 /// IPinfo requests context structure.
 pub struct IpInfo {
-    url: String,
     token: Option<String>,
     client: reqwest::Client,
     cache: LruCache<String, IpDetails>,
@@ -116,10 +119,7 @@ impl IpInfo {
         let client =
             reqwest::Client::builder().timeout(config.timeout).build()?;
 
-        let url = "https://ipinfo.io".to_owned();
-
         let mut ipinfo_obj = Self {
-            url,
             client,
             token: config.token,
             cache: LruCache::new(
@@ -260,7 +260,7 @@ impl IpInfo {
     ) -> Result<HashMap<String, IpDetails>, IpError> {
         // Lookup cache misses which are not bogon
         let response = client
-            .post(&format!("{}/batch", self.url))
+            .post(&format!("{}/batch", BASE_URL))
             .headers(Self::construct_headers())
             .bearer_auth(self.token.as_deref().unwrap_or_default())
             .json(&json!(ips))
@@ -303,6 +303,18 @@ impl IpInfo {
     /// }
     /// ```
     pub async fn lookup(&mut self, ip: &str) -> Result<IpDetails, IpError> {
+        self._lookup(ip, BASE_URL).await
+    }
+
+    pub async fn lookup_v6(&mut self, ip: &str) -> Result<IpDetails, IpError> {
+        self._lookup(ip, BASE_URL_V6).await
+    }
+
+    async fn _lookup(
+        &mut self,
+        ip: &str,
+        base_url: &str,
+    ) -> Result<IpDetails, IpError> {
         if is_bogon(ip) {
             return Ok(IpDetails {
                 ip: ip.to_string(),
@@ -321,7 +333,7 @@ impl IpInfo {
         // lookup in case of a cache miss
         let response = self
             .client
-            .get(&format!("{}/{}", self.url, ip))
+            .get(&format!("{}/{}", base_url, ip))
             .headers(Self::construct_headers())
             .bearer_auth(self.token.as_deref().unwrap_or_default())
             .send()
@@ -370,7 +382,7 @@ impl IpInfo {
             return Err(err!(MapLimitError));
         }
 
-        let map_url = &format!("{}/tools/map?cli=1", self.url);
+        let map_url = &format!("{}/tools/map?cli=1", BASE_URL);
         let client = self.client.clone();
         let json_ips = serde_json::json!(ips);
 
