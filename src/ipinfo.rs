@@ -79,6 +79,7 @@ impl Default for IpInfoConfig {
 
 /// IPinfo requests context structure.
 pub struct IpInfo {
+    url: String,
     token: Option<String>,
     client: reqwest::Client,
     cache: LruCache<String, IpDetails>,
@@ -119,7 +120,10 @@ impl IpInfo {
         let client =
             reqwest::Client::builder().timeout(config.timeout).build()?;
 
+        let url = "https://ipinfo.io".to_owned();
+
         let mut ipinfo_obj = Self {
+            url,
             client,
             token: config.token,
             cache: LruCache::new(
