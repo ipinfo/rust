@@ -306,6 +306,23 @@ impl IpInfo {
         self._lookup(ip, BASE_URL).await
     }
 
+    /// looks up IPDetails of your own v4 IP
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use ipinfo::IpInfo;
+    ///
+    ///  #[tokio::main]
+    /// async fn main() {
+    ///     let mut ipinfo = IpInfo::new(Default::default()).expect("should construct");
+    ///     let res = ipinfo.lookup_self_v4().await.expect("should run");
+    /// }
+    /// ```
+    pub async fn lookup_self_v4(&mut self) -> Result<IpDetails, IpError> {
+        self._lookup("", BASE_URL).await
+    }
+
     /// looks up IPDetails of your own v6 IP
     ///
     /// # Example
