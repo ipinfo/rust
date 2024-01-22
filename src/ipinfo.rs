@@ -306,8 +306,9 @@ impl IpInfo {
         self._lookup(ip, BASE_URL).await
     }
 
-    pub async fn lookup_v6(&mut self, ip: &str) -> Result<IpDetails, IpError> {
-        self._lookup(ip, BASE_URL_V6).await
+    // Lookup your own v6 IP
+    pub async fn lookup_self_v6(&mut self) -> Result<IpDetails, IpError> {
+        self._lookup("", BASE_URL_V6).await
     }
 
     async fn _lookup(
