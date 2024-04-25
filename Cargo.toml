@@ -1,12 +1,12 @@
 [package]
 name = "ipinfo"
 description = "ipinfo: A Rust library for IPInfo"
-version = "3.0.0"
+version = "3.0.1"
 authors = [
-    "Amr Ali <amralicc@gmail.com>",
-    "Uman Shahzad <uman@mslm.io>",
-    "Umar Farooq <mail.umar.now@gmail.com>",
-    "Fayzan Ahmad <fayzanx@gmail.com>",
+  "Amr Ali <amralicc@gmail.com>",
+  "Uman Shahzad <uman@mslm.io>",
+  "Umar Farooq <mail.umar.now@gmail.com>",
+  "Fayzan Ahmad <fayzanx@gmail.com>",
 ]
 edition = "2021"
 license = "Apache-2.0"
@@ -21,7 +21,7 @@ travis-ci = { repository = "ipinfo/rust", branch = "master" }
 codecov = { repository = "ipinfo/rust", branch = "master", service = "github" }
 
 [dependencies]
-reqwest = { version = "0.11", features = ["json"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 lru = "0.12.1"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -30,7 +30,7 @@ tokio = { version = "1", features = ["time"] }
 lazy_static = "1.4"
 
 [dev-dependencies]
-tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+tokio = { version = "1", default-features = false, features = ["rt-multi-thread", "macros"] }
 
 [profile.release]
 overflow-checks = true
