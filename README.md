@@ -16,7 +16,7 @@ To use IPinfo, add the following to your `Cargo.toml` file.
 
 ```toml
 [dependencies]
-ipinfo = "3.0.0"
+ipinfo = "3.0.1"
 ```
 
 ## Getting Started
@@ -29,19 +29,23 @@ data fields such as the IP type and company information. To get the complete lis
 information on an IP address and make more requests per day see [https://ipinfo.io/pricing](https://ipinfo.io/pricing).
 
 ## Examples
+
 There are several ready-to-run examples located in the `/examples` directory. These can be run directly, replacing `<token>` with your access token
 
 ```bash
 cargo run --example lookup -- <token>
 ```
+
 ```bash
 cargo run --example lookup_batch -- <token>
 ```
+
 ```bash
 cargo run --example get_map
 ```
 
 The `lookup` example above looks more or less like
+
 ```rust
 use ipinfo::{IpInfo, IpInfoConfig};
 #[tokio::main]
@@ -66,10 +70,10 @@ async fn main() {
 
 ## Features
 
-* Smart LRU cache for cost and quota savings.
-* Structured and type-checked query results.
-* Bulk IP address lookup using IPinfo [batch API](https://ipinfo.io/developers/batch).
-* Locate IPs on a World Map.
+- Smart LRU cache for cost and quota savings.
+- Structured and type-checked query results.
+- Bulk IP address lookup using IPinfo [batch API](https://ipinfo.io/developers/batch).
+- Locate IPs on a World Map.
 
 #### Internationalization
 
