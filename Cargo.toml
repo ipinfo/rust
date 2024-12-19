@@ -17,12 +17,17 @@ categories = ["network-programming"]
 keywords = ["ip", "geolocation", "ipinfo", "ip-address"]
 exclude = [".gitignore", ".travis.yml", ".cargo/config"]
 
+[features]
+default = ["rustls-tls"]
+rustls-tls = ["reqwest/rustls-tls"]
+openssl = ["reqwest/native-tls"]
+
 [badges]
 travis-ci = { repository = "ipinfo/rust", branch = "master" }
 codecov = { repository = "ipinfo/rust", branch = "master", service = "github" }
 
 [dependencies]
-reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+reqwest = { version = "0.12", default-features = false, features = ["json"] }
 lru = "0.12.1"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
