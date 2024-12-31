@@ -38,6 +38,7 @@ overflow-checks = true
 lto = true
 
 [features]
-default = ["openssl"]
+default = ["default-tls"]
+default-tls = ["reqwest/default-tls"]
+native-tls = ["reqwest/native-tls"]
 rustls-tls = ["reqwest/rustls-tls"]
-openssl = ["reqwest/native-tls"]
