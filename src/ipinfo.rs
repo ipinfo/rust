@@ -260,7 +260,7 @@ impl IpInfo {
     ) -> Result<HashMap<String, IpDetails>, IpError> {
         // Lookup cache misses which are not bogon
         let response = client
-            .post(&format!("{}/batch", BASE_URL))
+            .post(format!("{}/batch", BASE_URL))
             .headers(Self::construct_headers())
             .bearer_auth(self.token.as_deref().unwrap_or_default())
             .json(&json!(ips))
@@ -363,7 +363,7 @@ impl IpInfo {
         // lookup in case of a cache miss
         let response = self
             .client
-            .get(&format!("{}/{}", base_url, ip))
+            .get(format!("{}/{}", base_url, ip))
             .headers(Self::construct_headers())
             .bearer_auth(self.token.as_deref().unwrap_or_default())
             .send()
