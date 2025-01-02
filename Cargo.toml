@@ -1,12 +1,8 @@
 [package]
 name = "ipinfo"
 description = "ipinfo: A Rust library for IPInfo"
-version = "3.0.1"
+version = "3.1.0"
 authors = [
-    "Amr Ali <amralicc@gmail.com>",
-    "Uman Shahzad <uman@mslm.io>",
-    "Umar Farooq <mail.umar.now@gmail.com>",
-    "Fayzan Ahmad <fayzanx@gmail.com>",
     "IPinfo Releases <releases@ipinfo.io>",
 ]
 edition = "2021"
