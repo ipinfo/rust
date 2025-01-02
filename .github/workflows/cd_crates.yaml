@@ -25,4 +25,4 @@ jobs:
         IPINFO_TOKEN: ${{ secrets.IPINFO_TOKEN }}
 
     - name: Publish
-      run: cargo publish -v --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+      run: cargo publish -v --token ${{ secrets.CARGO_REGISTRY_TOKEN_NEW }}
