@@ -22,16 +22,17 @@ travis-ci = { repository = "ipinfo/rust", branch = "master" }
 codecov = { repository = "ipinfo/rust", branch = "master", service = "github" }
 
 [dependencies]
-reqwest = { version = "0.12", features = ["json"], default-features = false }
-lru = "0.12.1"
+reqwest = { version = "0.12", default-features = false, features = ["json"] }
+lru = "0.12"
+# per https://serde.rs/no-std.html, "a dependency on serde_json always needs Serde built with std", which is why we do not set "default-features = false" on `serde`.
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-ipnetwork = "0.20.0"
-tokio = { version = "1", features = ["time"] }
-lazy_static = "1.4"
+ipnetwork = "0.20"
+tokio = { version = "1", default-features = false, features = ["time"] }
+lazy_static = "1.5"
 
 [dev-dependencies]
-tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+tokio = { version = "1", default-features = false, features = ["rt-multi-thread", "macros"] }
 
 [profile.release]
 overflow-checks = true
