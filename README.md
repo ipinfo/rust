@@ -28,7 +28,7 @@ The free plan is limited to 50,000 requests per month, and doesn't include some 
 data fields such as the IP type and company information. To get the complete list of
 information on an IP address and make more requests per day see [https://ipinfo.io/pricing](https://ipinfo.io/pricing).
 
-⚠️ Note: This library does not currently support our newest free API https://ipinfo.io/lite. If you’d like to use IPinfo Lite, you can call the [endpoint directly](https://ipinfo.io/developers/responses#lite-api) using your preferred HTTP client. Developers are also welcome to contribute support for Lite by submitting a pull request.
+⚠️ Note: This library does not currently support our newest free API https://ipinfo.io/lite. If you’d like to use IPinfo Lite, you can call the [endpoint directly](https://ipinfo.io/developers/lite-api) using your preferred HTTP client. Developers are also welcome to contribute support for Lite by submitting a pull request.
 
 ## Examples
 
