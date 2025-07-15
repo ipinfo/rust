@@ -584,12 +584,12 @@ mod tests {
         let ip4 = &details["4.2.2.4"];
         assert_eq!(ip4.ip, "4.2.2.4");
         assert_eq!(ip4.hostname, Some("d.resolvers.level3.net".to_owned()));
-        assert_eq!(ip4.city, "Broomfield");
-        assert_eq!(ip4.region, "Colorado");
+        assert_eq!(ip4.city, "Monroe");
+        assert_eq!(ip4.region, "Louisiana");
         assert_eq!(ip4.country, "US");
-        assert_eq!(ip4.loc, "39.8854,-105.1139");
-        assert_eq!(ip4.postal, Some("80021".to_owned()));
-        assert_eq!(ip4.timezone, Some("America/Denver".to_owned()));
+        assert_eq!(ip4.loc, "32.5530,-92.0422");
+        assert_eq!(ip4.postal, Some("71203".to_owned()));
+        assert_eq!(ip4.timezone, Some("America/Chicago".to_owned()));
     }
 
     #[tokio::test]
