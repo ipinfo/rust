@@ -197,22 +197,72 @@ pub struct DomainsDetails {
 }
 
 /// CountryFlag details.
-#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
 pub struct CountryFlag {
     pub emoji: String,
     pub unicode: String,
 }
 
 /// CountryCurrency details.
-#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
 pub struct CountryCurrency {
     pub code: String,
     pub symbol: String,
 }
 
 /// Continent details.
-#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
 pub struct Continent {
     pub code: String,
     pub name: String,
+}
+
+#[derive(Debug, Default, Deserialize, Serialize, Clone)]
+pub struct IpDetailsLite {
+    pub ip: String,
+
+    /// The country code for the IP address.
+    pub country_code: String,
+
+    /// The country name for the IP address.
+    pub country: String,
+
+    /// The country name for the IP address.
+    #[serde(skip_deserializing)]
+    pub country_name: String,
+
+    /// EU status of the country.
+    #[serde(skip_deserializing)]
+    pub is_eu: bool,
+
+    /// Flag and unicode of the country.
+    #[serde(skip_deserializing)]
+    pub country_flag: CountryFlag,
+
+    /// Link of the Flag of country.
+    #[serde(skip_deserializing)]
+    pub country_flag_url: String,
+
+    /// Code and symbol of the country's currency.
+    #[serde(skip_deserializing)]
+    pub country_currency: CountryCurrency,
+
+    /// The AS number.
+    pub asn: String,
+
+    /// The AS name.
+    pub as_name: String,
+
+    /// The AS domain.
+    pub as_domain: String,
+
+    /// Code and name of the continent.
+    #[serde(skip_deserializing)]
+    pub continent: Continent,
+
+    /// If the IP Address is Bogon
+    pub bogon: Option<bool>,
+
+    #[serde(flatten)]
+    pub extra: HashMap<String, Value>,
 }
