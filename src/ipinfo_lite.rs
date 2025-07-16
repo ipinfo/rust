@@ -222,7 +222,7 @@ impl IpInfoLite {
         // lookup in case of a cache miss
         let response = self
             .client
-            .get(format!("{}/{}", base_url, ip))
+            .get(format!("{base_url}/{ip}"))
             .headers(Self::construct_headers())
             .bearer_auth(self.token.as_deref().unwrap_or_default())
             .send()
@@ -281,7 +281,7 @@ impl IpInfoLite {
         let mut headers = HeaderMap::new();
         headers.insert(
             USER_AGENT,
-            HeaderValue::from_str(&format!("IPinfoClient/Rust/{}", VERSION))
+            HeaderValue::from_str(&format!("IPinfoClient/Rust/{VERSION}"))
                 .unwrap(),
         );
         headers.insert(

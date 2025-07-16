@@ -20,5 +20,5 @@ pub const BATCH_REQ_TIMEOUT_DEFAULT: Duration = Duration::from_secs(5);
 
 const CACHE_KEY_VERSION: &str = "1";
 pub fn cache_key(k: &str) -> String {
-    format!("{}:{}", k, CACHE_KEY_VERSION)
+    format!("{k}:{CACHE_KEY_VERSION}")
 }

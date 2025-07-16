@@ -260,7 +260,7 @@ impl IpInfo {
     ) -> Result<HashMap<String, IpDetails>, IpError> {
         // Lookup cache misses which are not bogon
         let response = client
-            .post(format!("{}/batch", BASE_URL))
+            .post(format!("{BASE_URL}/batch"))
             .headers(Self::construct_headers())
             .bearer_auth(self.token.as_deref().unwrap_or_default())
             .json(&json!(ips))
@@ -363,7 +363,7 @@ impl IpInfo {
         // lookup in case of a cache miss
         let response = self
             .client
-            .get(format!("{}/{}", base_url, ip))
+            .get(format!("{base_url}/{ip}"))
             .headers(Self::construct_headers())
             .bearer_auth(self.token.as_deref().unwrap_or_default())
             .send()
@@ -412,7 +412,7 @@ impl IpInfo {
             return Err(err!(MapLimitError));
         }
 
-        let map_url = &format!("{}/tools/map?cli=1", BASE_URL);
+        let map_url = &format!("{BASE_URL}/tools/map?cli=1");
         let client = self.client.clone();
         let json_ips = serde_json::json!(ips);
 
@@ -454,7 +454,7 @@ impl IpInfo {
         let mut headers = HeaderMap::new();
         headers.insert(
             USER_AGENT,
-            HeaderValue::from_str(&format!("IPinfoClient/Rust/{}", VERSION))
+            HeaderValue::from_str(&format!("IPinfoClient/Rust/{VERSION}"))
                 .unwrap(),
         );
         headers.insert(
