@@ -118,7 +118,7 @@ lazy_static! {
 /// assert_eq!(is_bogon("foo"), false);
 /// ```
 pub fn is_bogon(ip_address: &str) -> bool {
-    ip_address.parse().map_or(false, is_bogon_addr)
+    ip_address.parse().is_ok_and(is_bogon_addr)
 }
 
 /// Returns a boolean indicating whether an IP address is bogus.

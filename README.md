@@ -28,7 +28,7 @@ The free plan is limited to 50,000 requests per month, and doesn't include some 
 data fields such as the IP type and company information. To get the complete list of
 information on an IP address and make more requests per day see [https://ipinfo.io/pricing](https://ipinfo.io/pricing).
 
-⚠️ Note: This library does not currently support our newest free API https://ipinfo.io/lite. If you’d like to use IPinfo Lite, you can call the [endpoint directly](https://ipinfo.io/developers/lite-api) using your preferred HTTP client. Developers are also welcome to contribute support for Lite by submitting a pull request.
+The library also supports the Lite API, see the [Lite API section](#lite-api) for more info.
 
 ## Examples
 
@@ -108,6 +108,42 @@ let config = IpInfoConfig {
     default_countries: countries,
     ..Default::default()
 };
+```
+
+### Lite API
+
+The library gives the possibility to use the [Lite API](https://ipinfo.io/developers/lite-api) too, authentication with your token is still required.
+
+The returned details are slightly different from the Core API.
+
+There's a Lite API example too in the `/examples` directory. You can run it directly like the others, remember to replace `<token>` with your access token
+
+```bash
+cargo run --example lookup_lite -- <token>
+```
+
+The `lookup_lite` example above looks more or less like
+
+```rust
+use ipinfo::{IpInfoLite, IpInfoLiteConfig};
+#[tokio::main]
+async fn main() {
+    let config = IpInfoLiteConfig {
+        token: Some("<token>".to_string()),
+        ..Default::default()
+    };
+
+    let mut ipinfo = IpInfoLite::new(config)
+        .expect("should construct");
+
+    let res = ipinfo.lookup_self_v4().await;
+    match res {
+        Ok(r) => {
+            println!("Current IP lookup result: {:?}", r);
+        },
+        Err(e) => println!("error occurred: {}", &e.to_string()),
+    }
+}
 ```
 
 ## Other Libraries

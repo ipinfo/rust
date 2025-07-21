@@ -260,7 +260,7 @@ impl IpInfo {
     ) -> Result<HashMap<String, IpDetails>, IpError> {
         // Lookup cache misses which are not bogon
         let response = client
-            .post(format!("{}/batch", BASE_URL))
+            .post(format!("{BASE_URL}/batch"))
             .headers(Self::construct_headers())
             .bearer_auth(self.token.as_deref().unwrap_or_default())
             .json(&json!(ips))
@@ -363,7 +363,7 @@ impl IpInfo {
         // lookup in case of a cache miss
         let response = self
             .client
-            .get(format!("{}/{}", base_url, ip))
+            .get(format!("{base_url}/{ip}"))
             .headers(Self::construct_headers())
             .bearer_auth(self.token.as_deref().unwrap_or_default())
             .send()
@@ -412,7 +412,7 @@ impl IpInfo {
             return Err(err!(MapLimitError));
         }
 
-        let map_url = &format!("{}/tools/map?cli=1", BASE_URL);
+        let map_url = &format!("{BASE_URL}/tools/map?cli=1");
         let client = self.client.clone();
         let json_ips = serde_json::json!(ips);
 
@@ -454,7 +454,7 @@ impl IpInfo {
         let mut headers = HeaderMap::new();
         headers.insert(
             USER_AGENT,
-            HeaderValue::from_str(&format!("IPinfoClient/Rust/{}", VERSION))
+            HeaderValue::from_str(&format!("IPinfoClient/Rust/{VERSION}"))
                 .unwrap(),
         );
         headers.insert(
@@ -584,12 +584,12 @@ mod tests {
         let ip4 = &details["4.2.2.4"];
         assert_eq!(ip4.ip, "4.2.2.4");
         assert_eq!(ip4.hostname, Some("d.resolvers.level3.net".to_owned()));
-        assert_eq!(ip4.city, "Broomfield");
-        assert_eq!(ip4.region, "Colorado");
+        assert_eq!(ip4.city, "Monroe");
+        assert_eq!(ip4.region, "Louisiana");
         assert_eq!(ip4.country, "US");
-        assert_eq!(ip4.loc, "39.8854,-105.1139");
-        assert_eq!(ip4.postal, Some("80021".to_owned()));
-        assert_eq!(ip4.timezone, Some("America/Denver".to_owned()));
+        assert_eq!(ip4.loc, "32.5530,-92.0422");
+        assert_eq!(ip4.postal, Some("71203".to_owned()));
+        assert_eq!(ip4.timezone, Some("America/Chicago".to_owned()));
     }
 
     #[tokio::test]
