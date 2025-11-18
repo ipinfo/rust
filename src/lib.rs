@@ -56,10 +56,12 @@ mod api;
 mod bogon;
 mod data;
 mod ipinfo;
+mod ipinfo_core;
 mod ipinfo_lite;
 mod util;
 
 pub use crate::ipinfo::*;
+pub use crate::ipinfo_core::*;
 pub use crate::ipinfo_lite::*;
 pub use api::*;
 pub use bogon::*;
