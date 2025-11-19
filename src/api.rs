@@ -326,3 +326,134 @@ pub struct IpDetailsCore {
     #[serde(flatten)]
     pub extra: HashMap<String, Value>,
 }
+
+/// Plus API Geo details (extends Core).
+#[derive(Debug, Default, Deserialize, Serialize, Clone)]
+pub struct PlusGeo {
+    pub city: Option<String>,
+    pub region: Option<String>,
+    pub region_code: Option<String>,
+    pub country: Option<String>,
+    pub country_code: Option<String>,
+    pub continent: Option<String>,
+    pub continent_code: Option<String>,
+    pub latitude: f64,
+    pub longitude: f64,
+    pub timezone: Option<String>,
+    pub postal_code: Option<String>,
+    pub dma_code: Option<String>,
+    pub geoname_id: Option<String>,
+    pub radius: Option<i32>,
+    pub last_changed: Option<String>,
+
+    /// Enriched fields
+    #[serde(skip_deserializing)]
+    pub country_name: Option<String>,
+    #[serde(skip_deserializing)]
+    pub is_eu: Option<bool>,
+    #[serde(skip_deserializing)]
+    pub country_flag: Option<CountryFlag>,
+    #[serde(skip_deserializing)]
+    pub country_flag_url: Option<String>,
+    #[serde(skip_deserializing)]
+    pub country_currency: Option<CountryCurrency>,
+    #[serde(skip_deserializing)]
+    pub continent_info: Option<Continent>,
+}
+
+/// Plus API AS details (extends Core).
+#[derive(Debug, Default, Deserialize, Serialize, Clone)]
+pub struct PlusAS {
+    pub asn: String,
+    pub name: String,
+    pub domain: String,
+    #[serde(rename = "type")]
+    pub as_type: String,
+    pub last_changed: Option<String>,
+}
+
+/// Plus API Mobile details.
+#[derive(Debug, Default, Deserialize, Serialize, Clone)]
+pub struct PlusMobile {
+    pub name: Option<String>,
+    pub mcc: Option<String>,
+    pub mnc: Option<String>,
+}
+
+/// Plus API Anonymous details.
+#[derive(Debug, Default, Deserialize, Serialize, Clone)]
+pub struct PlusAnonymous {
+    pub is_proxy: bool,
+    pub is_relay: bool,
+    pub is_tor: bool,
+    pub is_vpn: bool,
+    pub name: Option<String>,
+}
+
+/// Plus API Abuse details (reuse existing AbuseDetails but with country_name).
+#[derive(Debug, Default, Deserialize, Serialize, Clone)]
+pub struct PlusAbuse {
+    pub address: Option<String>,
+    pub country: Option<String>,
+    #[serde(skip_deserializing)]
+    pub country_name: Option<String>,
+    pub email: Option<String>,
+    pub name: Option<String>,
+    pub network: Option<String>,
+    pub phone: Option<String>,
+}
+
+/// Plus API Company details (reuse existing CompanyDetails).
+#[derive(Debug, Default, Deserialize, Serialize, Clone)]
+pub struct PlusCompany {
+    pub name: Option<String>,
+    pub domain: Option<String>,
+    #[serde(rename = "type")]
+    pub company_type: Option<String>,
+}
+
+/// Plus API Privacy details (reuse existing PrivacyDetails).
+#[derive(Debug, Default, Deserialize, Serialize, Clone)]
+pub struct PlusPrivacy {
+    pub vpn: bool,
+    pub proxy: bool,
+    pub tor: bool,
+    pub relay: bool,
+    pub hosting: bool,
+    pub service: Option<String>,
+}
+
+/// Plus API Domains details (reuse existing DomainsDetails).
+#[derive(Debug, Default, Deserialize, Serialize, Clone)]
+pub struct PlusDomains {
+    pub ip: Option<String>,
+    pub total: u64,
+    pub domains: Vec<String>,
+}
+
+/// Plus API IP address lookup details.
+#[derive(Debug, Default, Deserialize, Serialize, Clone)]
+pub struct IpDetailsPlus {
+    pub ip: String,
+    pub hostname: Option<String>,
+    pub geo: Option<PlusGeo>,
+    #[serde(rename = "as")]
+    pub asn: Option<PlusAS>,
+    pub mobile: Option<PlusMobile>,
+    pub anonymous: Option<PlusAnonymous>,
+    pub is_anonymous: bool,
+    pub is_anycast: bool,
+    pub is_hosting: bool,
+    pub is_mobile: bool,
+    pub is_satellite: bool,
+    pub abuse: Option<PlusAbuse>,
+    pub company: Option<PlusCompany>,
+    pub privacy: Option<PlusPrivacy>,
+    pub domains: Option<PlusDomains>,
+
+    /// If the IP Address is Bogon
+    pub bogon: Option<bool>,
+
+    #[serde(flatten)]
+    pub extra: HashMap<String, Value>,
+}
