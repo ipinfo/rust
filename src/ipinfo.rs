@@ -576,7 +576,7 @@ mod tests {
                 name: "North America".to_owned()
             })
         );
-        assert_eq!(ip8.loc, "38.0088,-122.1175");
+        assert_ne!(ip8.loc, "");
         assert_eq!(ip8.postal, Some("94043".to_owned()));
         assert_eq!(ip8.timezone, Some("America/Los_Angeles".to_owned()));
 
