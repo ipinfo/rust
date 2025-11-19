@@ -266,3 +266,63 @@ pub struct IpDetailsLite {
     #[serde(flatten)]
     pub extra: HashMap<String, Value>,
 }
+
+/// Core API Geo details.
+#[derive(Debug, Default, Deserialize, Serialize, Clone)]
+pub struct CoreGeo {
+    pub city: Option<String>,
+    pub region: Option<String>,
+    pub region_code: Option<String>,
+    pub country: Option<String>,
+    pub country_code: Option<String>,
+    pub continent: Option<String>,
+    pub continent_code: Option<String>,
+    pub latitude: f64,
+    pub longitude: f64,
+    pub timezone: Option<String>,
+    pub postal_code: Option<String>,
+
+    /// Enriched fields
+    #[serde(skip_deserializing)]
+    pub country_name: Option<String>,
+    #[serde(skip_deserializing)]
+    pub is_eu: Option<bool>,
+    #[serde(skip_deserializing)]
+    pub country_flag: Option<CountryFlag>,
+    #[serde(skip_deserializing)]
+    pub country_flag_url: Option<String>,
+    #[serde(skip_deserializing)]
+    pub country_currency: Option<CountryCurrency>,
+    #[serde(skip_deserializing)]
+    pub continent_info: Option<Continent>,
+}
+
+/// Core API AS details.
+#[derive(Debug, Default, Deserialize, Serialize, Clone)]
+pub struct CoreAS {
+    pub asn: String,
+    pub name: String,
+    pub domain: String,
+    #[serde(rename = "type")]
+    pub as_type: String,
+}
+
+/// Core API IP address lookup details.
+#[derive(Debug, Default, Deserialize, Serialize, Clone)]
+pub struct IpDetailsCore {
+    pub ip: String,
+    pub geo: Option<CoreGeo>,
+    #[serde(rename = "as")]
+    pub asn: Option<CoreAS>,
+    pub is_anonymous: bool,
+    pub is_anycast: bool,
+    pub is_hosting: bool,
+    pub is_mobile: bool,
+    pub is_satellite: bool,
+
+    /// If the IP Address is Bogon
+    pub bogon: Option<bool>,
+
+    #[serde(flatten)]
+    pub extra: HashMap<String, Value>,
+}
