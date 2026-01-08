@@ -18,7 +18,7 @@ travis-ci = { repository = "ipinfo/rust", branch = "master" }
 codecov = { repository = "ipinfo/rust", branch = "master", service = "github" }
 
 [dependencies]
-reqwest = { version = "0.12", default-features = false, features = ["json"] }
+reqwest = { version = "0.13", default-features = false, features = ["http2", "json"] }
 lru = "0.16"
 # per https://serde.rs/no-std.html, "a dependency on serde_json always needs Serde built with std", which is why we do not set "default-features = false" on `serde`.
 serde = { version = "1.0", features = ["derive"] }
@@ -38,4 +38,4 @@ lto = true
 default = ["default-tls"]
 default-tls = ["reqwest/default-tls"]
 native-tls = ["reqwest/native-tls"]
-rustls-tls = ["reqwest/rustls-tls"]
+rustls-tls = ["reqwest/rustls"]
