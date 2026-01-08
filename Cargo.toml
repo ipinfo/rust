@@ -19,7 +19,7 @@ codecov = { repository = "ipinfo/rust", branch = "master", service = "github" }
 
 [dependencies]
 reqwest = { version = "0.12", default-features = false, features = ["json"] }
-lru = "0.12"
+lru = "0.16"
 # per https://serde.rs/no-std.html, "a dependency on serde_json always needs Serde built with std", which is why we do not set "default-features = false" on `serde`.
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
