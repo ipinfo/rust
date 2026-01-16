@@ -457,3 +457,20 @@ pub struct IpDetailsPlus {
     #[serde(flatten)]
     pub extra: HashMap<String, Value>,
 }
+
+/// Residential proxy detection details.
+#[derive(Debug, Default, Deserialize, Serialize, Clone)]
+pub struct ResproxyDetails {
+    /// The IP address.
+    #[serde(default)]
+    pub ip: String,
+
+    /// The last time this IP was seen as a residential proxy.
+    pub last_seen: Option<String>,
+
+    /// The percentage of days seen as a residential proxy.
+    pub percent_days_seen: Option<f64>,
+
+    /// The residential proxy service name.
+    pub service: Option<String>,
+}
