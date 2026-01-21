@@ -16,8 +16,8 @@ use std::{collections::HashMap, num::NonZeroUsize, time::Duration};
 
 use crate::{
     cache_key, is_bogon, Continent, CountryCurrency, CountryFlag, IpDetails,
-    IpError, BATCH_MAX_SIZE, BATCH_REQ_TIMEOUT_DEFAULT, CONTINENTS, COUNTRIES,
-    CURRENCIES, EU, FLAGS, VERSION,
+    IpError, ResproxyDetails, BATCH_MAX_SIZE, BATCH_REQ_TIMEOUT_DEFAULT,
+    CONTINENTS, COUNTRIES, CURRENCIES, EU, FLAGS, VERSION,
 };
 
 use lru::LruCache;
@@ -428,6 +428,52 @@ impl IpInfo {
         Ok(report_url.unwrap().to_string())
     }
 
+    /// Looks up residential proxy details for a single IP address
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use ipinfo::IpInfo;
+    ///
+    ///  #[tokio::main]
+    /// async fn main() {
+    ///     let ipinfo = IpInfo::new(Default::default()).expect("should construct");
+    ///     let res = ipinfo.lookup_resproxy("175.107.211.204").await.expect("should run");
+    /// }
+    /// ```
+    pub async fn lookup_resproxy(
+        &self,
+        ip: &str,
+    ) -> Result<ResproxyDetails, IpError> {
+        let response = self
+            .client
+            .get(format!("{BASE_URL}/resproxy/{ip}"))
+            .headers(Self::construct_headers())
+            .bearer_auth(self.token.as_deref().unwrap_or_default())
+            .send()
+            .await?;
+
+        // Check if we exhausted our request quota
+        if let reqwest::StatusCode::TOO_MANY_REQUESTS = response.status() {
+            return Err(err!(RateLimitExceededError));
+        }
+
+        // Acquire response
+        let raw_resp = response.error_for_status()?.text().await?;
+
+        // Parse the response
+        let resp: serde_json::Value = serde_json::from_str(&raw_resp)?;
+
+        // Return if an error occurred
+        if let Some(e) = resp["error"].as_str() {
+            return Err(err!(IpRequestError, e));
+        }
+
+        // Parse the results
+        let details: ResproxyDetails = serde_json::from_str(&raw_resp)?;
+        Ok(details)
+    }
+
     // Add country details and EU status to response
     fn populate_static_details(&self, details: &mut IpDetails) {
         if !&details.country.is_empty() {
@@ -616,5 +662,35 @@ mod tests {
         assert!(details.contains_key("8.8.8.8"));
         assert!(details.contains_key("4.2.2.4"));
         assert_eq!(details.len(), 2);
+    }
+
+    #[tokio::test]
+    async fn request_resproxy() {
+        let ipinfo = get_ipinfo_client();
+
+        let details = ipinfo
+            .lookup_resproxy("175.107.211.204")
+            .await
+            .expect("should lookup resproxy");
+
+        assert_eq!(details.ip, "175.107.211.204");
+        assert!(details.last_seen.is_some());
+        assert!(details.percent_days_seen.is_some());
+        assert!(details.service.is_some());
+    }
+
+    #[tokio::test]
+    async fn request_resproxy_empty() {
+        let ipinfo = get_ipinfo_client();
+
+        let details = ipinfo
+            .lookup_resproxy("8.8.8.8")
+            .await
+            .expect("should lookup resproxy");
+
+        assert!(details.ip.is_empty());
+        assert!(details.last_seen.is_none());
+        assert!(details.percent_days_seen.is_none());
+        assert!(details.service.is_none());
     }
 }
