@@ -146,6 +146,97 @@ async fn main() {
 }
 ```
 
+### Core API
+
+The library also supports the [Core API](https://ipinfo.io/developers/data-types#core-data), which provides city-level geolocation with nested geo and AS objects. Authentication with your token is required.
+
+```rust
+use ipinfo::{IpInfoCore, IpInfoCoreConfig};
+
+#[tokio::main]
+async fn main() {
+    let config = IpInfoCoreConfig {
+        token: Some("<token>".to_string()),
+        ..Default::default()
+    };
+
+    let mut ipinfo = IpInfoCore::new(config)
+        .expect("should construct");
+
+    let res = ipinfo.lookup("8.8.8.8").await;
+    match res {
+        Ok(r) => {
+            println!("IP: {}", r.ip);
+            println!("City: {:?}", r.geo.city);
+            println!("Country: {:?}", r.geo.country);
+            println!("ASN: {:?}", r.as_info.asn);
+            println!("AS Name: {:?}", r.as_info.name);
+        },
+        Err(e) => println!("error occurred: {}", &e.to_string()),
+    }
+}
+```
+
+### Plus API
+
+The library also supports the [Plus API](https://ipinfo.io/developers/data-types#plus-data), which provides enhanced data including mobile carrier info and privacy detection. Authentication with your token is required.
+
+```rust
+use ipinfo::{IpInfoPlus, IpInfoPlusConfig};
+
+#[tokio::main]
+async fn main() {
+    let config = IpInfoPlusConfig {
+        token: Some("<token>".to_string()),
+        ..Default::default()
+    };
+
+    let mut ipinfo = IpInfoPlus::new(config)
+        .expect("should construct");
+
+    let res = ipinfo.lookup("8.8.8.8").await;
+    match res {
+        Ok(r) => {
+            println!("IP: {}", r.ip);
+            println!("City: {:?}", r.geo.city);
+            println!("Mobile: {:?}", r.mobile);
+            println!("Anonymous: {:?}", r.anonymous);
+        },
+        Err(e) => println!("error occurred: {}", &e.to_string()),
+    }
+}
+```
+
+### Residential Proxy API
+
+The library also supports the [Residential Proxy API](https://ipinfo.io/developers/residential-proxy-api), which allows you to check if an IP address is a residential proxy. Authentication with your token is required.
+
+```rust
+use ipinfo::{IpInfo, IpInfoConfig};
+
+#[tokio::main]
+async fn main() {
+    let config = IpInfoConfig {
+        token: Some("<token>".to_string()),
+        ..Default::default()
+    };
+
+    let mut ipinfo = IpInfo::new(config)
+        .expect("should construct");
+
+    let res = ipinfo.lookup_resproxy("175.107.211.204").await;
+    match res {
+        Ok(r) => {
+            println!("IP: {}", r.ip);
+            println!("Last Seen: {}", r.last_seen);
+            println!("Percent Days Seen: {}", r.percent_days_seen);
+            println!("Service: {}", r.service);
+        },
+        Err(e) => println!("error occurred: {}", &e.to_string()),
+    }
+}
+```
+
 ## Other Libraries
 
 There are official IPinfo client libraries available for many languages including
