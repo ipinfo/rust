@@ -60,6 +60,10 @@ pub struct IpInfoConfig {
 
     // Default mapping of country codes to their respective continent code and name
     pub default_continents: Option<HashMap<String, Continent>>,
+
+    /// Custom base URL for API requests (used for testing). If None, uses the default URL.
+    #[doc(hidden)]
+    pub base_url: Option<String>,
 }
 
 impl Default for IpInfoConfig {
@@ -73,6 +77,7 @@ impl Default for IpInfoConfig {
             default_flags: None,
             default_currencies: None,
             default_continents: None,
+            base_url: None,
         }
     }
 }
@@ -87,6 +92,7 @@ pub struct IpInfo {
     country_flags: HashMap<String, CountryFlag>,
     country_currencies: HashMap<String, CountryCurrency>,
     continents: HashMap<String, Continent>,
+    base_url: String,
 }
 
 pub struct BatchReqOpts {
@@ -130,6 +136,7 @@ impl IpInfo {
             country_flags: HashMap::new(),
             country_currencies: HashMap::new(),
             continents: HashMap::new(),
+            base_url: config.base_url.unwrap_or_else(|| BASE_URL.to_string()),
         };
 
         if config.defaut_countries.is_none() {
@@ -447,7 +454,7 @@ impl IpInfo {
     ) -> Result<ResproxyDetails, IpError> {
         let response = self
             .client
-            .get(format!("{BASE_URL}/resproxy/{ip}"))
+            .get(format!("{}/resproxy/{ip}", self.base_url))
             .headers(Self::construct_headers())
             .bearer_auth(self.token.as_deref().unwrap_or_default())
             .send()
@@ -517,6 +524,8 @@ mod tests {
     use super::*;
     use crate::IpErrorKind;
     use std::env;
+    use wiremock::matchers::{method, path};
+    use wiremock::{Mock, MockServer, ResponseTemplate};
 
     fn get_ipinfo_client() -> IpInfo {
         IpInfo::new(IpInfoConfig {
@@ -666,7 +675,27 @@ mod tests {
 
     #[tokio::test]
     async fn request_resproxy() {
-        let ipinfo = get_ipinfo_client();
+        let mock_server = MockServer::start().await;
+
+        Mock::given(method("GET"))
+            .and(path("/resproxy/175.107.211.204"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(
+                serde_json::json!({
+                    "ip": "175.107.211.204",
+                    "last_seen": "2025-01-20",
+                    "percent_days_seen": 0.85,
+                    "service": "example_service"
+                }),
+            ))
+            .mount(&mock_server)
+            .await;
+
+        let ipinfo = IpInfo::new(IpInfoConfig {
+            token: Some("test_token".to_string()),
+            base_url: Some(mock_server.uri()),
+            ..Default::default()
+        })
+        .expect("should construct");
 
         let details = ipinfo
             .lookup_resproxy("175.107.211.204")
@@ -674,14 +703,30 @@ mod tests {
             .expect("should lookup resproxy");
 
         assert_eq!(details.ip, "175.107.211.204");
-        assert!(details.last_seen.is_some());
-        assert!(details.percent_days_seen.is_some());
-        assert!(details.service.is_some());
+        assert_eq!(details.last_seen, Some("2025-01-20".to_string()));
+        assert_eq!(details.percent_days_seen, Some(0.85));
+        assert_eq!(details.service, Some("example_service".to_string()));
     }
 
     #[tokio::test]
     async fn request_resproxy_empty() {
-        let ipinfo = get_ipinfo_client();
+        let mock_server = MockServer::start().await;
+
+        Mock::given(method("GET"))
+            .and(path("/resproxy/8.8.8.8"))
+            .respond_with(
+                ResponseTemplate::new(200)
+                    .set_body_json(serde_json::json!({})),
+            )
+            .mount(&mock_server)
+            .await;
+
+        let ipinfo = IpInfo::new(IpInfoConfig {
+            token: Some("test_token".to_string()),
+            base_url: Some(mock_server.uri()),
+            ..Default::default()
+        })
+        .expect("should construct");
 
         let details = ipinfo
             .lookup_resproxy("8.8.8.8")

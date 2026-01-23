@@ -29,6 +29,7 @@ lazy_static = "1.5"
 
 [dev-dependencies]
 tokio = { version = "1", default-features = false, features = ["rt-multi-thread", "macros"] }
+wiremock = "0.6"
 
 [profile.release]
 overflow-checks = true
