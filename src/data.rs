@@ -542,7 +542,7 @@ lazy_static! {
             "BD" : { "code": "BDT" ,"symbol": "৳"},
             "BE" : { "code": "EUR" ,"symbol": "€"},
             "BF" : { "code": "XOF" ,"symbol": "CFA"},
-            "BG" : { "code": "BGN" ,"symbol": "лв"},
+            "BG" : { "code": "EUR" ,"symbol": "€"},
             "BH" : { "code": "BHD" ,"symbol": ".د.ب"},
             "BI" : { "code": "BIF" ,"symbol": "FBu"},
             "BJ" : { "code": "XOF" ,"symbol": "CFA"},
