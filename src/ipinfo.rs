@@ -139,35 +139,11 @@ impl IpInfo {
             base_url: config.base_url.unwrap_or_else(|| BASE_URL.to_string()),
         };
 
-        if config.defaut_countries.is_none() {
-            ipinfo_obj.countries = COUNTRIES.clone();
-        } else {
-            ipinfo_obj.countries = config.defaut_countries.unwrap();
-        }
-
-        if config.default_eu.is_none() {
-            ipinfo_obj.eu = EU.clone();
-        } else {
-            ipinfo_obj.eu = config.default_eu.unwrap();
-        }
-
-        if config.default_flags.is_none() {
-            ipinfo_obj.country_flags = FLAGS.clone();
-        } else {
-            ipinfo_obj.country_flags = config.default_flags.unwrap();
-        }
-
-        if config.default_currencies.is_none() {
-            ipinfo_obj.country_currencies = CURRENCIES.clone();
-        } else {
-            ipinfo_obj.country_currencies = config.default_currencies.unwrap();
-        }
-
-        if config.default_continents.is_none() {
-            ipinfo_obj.continents = CONTINENTS.clone();
-        } else {
-            ipinfo_obj.continents = config.default_continents.unwrap();
-        }
+        ipinfo_obj.countries = config.defaut_countries.unwrap_or_else(|| COUNTRIES.clone());
+        ipinfo_obj.eu = config.default_eu.unwrap_or_else(|| EU.clone());
+        ipinfo_obj.country_flags = config.default_flags.unwrap_or_else(|| FLAGS.clone());
+        ipinfo_obj.country_currencies = config.default_currencies.unwrap_or_else(|| CURRENCIES.clone());
+        ipinfo_obj.continents = config.default_continents.unwrap_or_else(|| CONTINENTS.clone());
 
         Ok(ipinfo_obj)
     }
