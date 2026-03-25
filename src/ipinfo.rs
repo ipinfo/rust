@@ -139,11 +139,17 @@ impl IpInfo {
             base_url: config.base_url.unwrap_or_else(|| BASE_URL.to_string()),
         };
 
-        ipinfo_obj.countries = config.defaut_countries.unwrap_or_else(|| COUNTRIES.clone());
+        ipinfo_obj.countries =
+            config.defaut_countries.unwrap_or_else(|| COUNTRIES.clone());
         ipinfo_obj.eu = config.default_eu.unwrap_or_else(|| EU.clone());
-        ipinfo_obj.country_flags = config.default_flags.unwrap_or_else(|| FLAGS.clone());
-        ipinfo_obj.country_currencies = config.default_currencies.unwrap_or_else(|| CURRENCIES.clone());
-        ipinfo_obj.continents = config.default_continents.unwrap_or_else(|| CONTINENTS.clone());
+        ipinfo_obj.country_flags =
+            config.default_flags.unwrap_or_else(|| FLAGS.clone());
+        ipinfo_obj.country_currencies = config
+            .default_currencies
+            .unwrap_or_else(|| CURRENCIES.clone());
+        ipinfo_obj.continents = config
+            .default_continents
+            .unwrap_or_else(|| CONTINENTS.clone());
 
         Ok(ipinfo_obj)
     }
